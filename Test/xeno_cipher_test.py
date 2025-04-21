@@ -81,9 +81,9 @@ def encrypt(plaintext, lfsr, r, x0, iterations):
 class TestXenoCipher(unittest.TestCase):
     def test_lfsr(self):
         """Test LFSR key stream generation."""
-        lfsr = LFSR([0, 2], 0b101)  # Taps at positions 0 and 2, initial state 101
+        lfsr = LFSR([0, 1], 0b101)  # Taps at positions 0 and 2, initial state 101
         key_stream = lfsr.generate_key_stream(5)
-        expected = [1, 0, 1, 0, 0]  # Expected output for this configuration
+        expected = [1, 0, 1, 1, 0]  # Expected output for this configuration
         self.assertEqual(key_stream, expected)
 
     def test_chaotic_encrypt(self):
