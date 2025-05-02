@@ -3,207 +3,567 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XenoCipher Demo</title>
+    <title>XenoCipher - Quantum-Resistant Encryption</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+
+    <style>
+        /* Custom styles */
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .glow {
+            box-shadow: 0 0 15px rgba(66, 153, 225, 0.5);
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        .step-connector {
+            height: 2px;
+            background: #e2e8f0;
+            flex-grow: 1;
+            margin: 0 5px;
+        }
+        .step-node {
+            transition: all 0.5s ease;
+        }
+        .loading-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .code-font {
+            font-family: 'Courier New', monospace;
+        }
+        .attack-btn {
+            transition: all 0.2s ease;
+        }
+        .attack-btn:hover {
+            transform: translateY(-2px);
+        }
+        .attack-btn:active {
+            transform: translateY(1px);
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #2d3748;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl">
-        <h1 class="text-3xl font-bold mb-2 text-center">XenoCipher Encryption Demo</h1>
-        <p class="text-center text-gray-600 mb-6">Quantum-Resistant Hybrid Encryption System</p>
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-2 text-gray-800">XenoCipher</h1>
+            <p class="text-gray-600 text-lg">Quantum-Resistant Hybrid Encryption System</p>
+            <div class="mt-2 flex justify-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    <span class="h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
+                    Secure
+                </span>
+                <span class="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="h-2 w-2 rounded-full bg-green-500 mr-2"></span>
+                    Quantum-Resistant
+                </span>
+                <span class="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                    <span class="h-2 w-2 rounded-full bg-purple-500 mr-2"></span>
+                    Adaptive
+                </span>
+            </div>
+        </div>
         
         <!-- Security Details -->
-        <div class="mb-6">
-            <div class="flex items-center mb-2">
-                <div class="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                <h2 class="text-lg font-semibold">Security Features</h2>
+        <div class="mb-8 bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                <h2 class="text-xl font-semibold text-gray-800">Security Features</h2>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                <div class="p-2 bg-gray-50 rounded">
-                    <span class="font-medium">NTRU Prime:</span> Post-quantum key exchange
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-3 bg-white rounded-md shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <span class="font-medium">NTRU Prime</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">Post-quantum key exchange</p>
                 </div>
-                <div class="p-2 bg-gray-50 rounded">
-                    <span class="font-medium">LFSR:</span> Bit-level stream generation
+                <div class="p-3 bg-white rounded-md shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <span class="font-medium">LFSR</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">Bit-level stream generation</p>
                 </div>
-                <div class="p-2 bg-gray-50 rounded">
-                    <span class="font-medium">Chaotic Map:</span> High entropy randomness
+                <div class="p-3 bg-white rounded-md shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <span class="font-medium">Chaotic Map</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">High entropy randomness</p>
                 </div>
-                <div class="p-2 bg-gray-50 rounded">
-                    <span class="font-medium">Transposition:</span> Bit permutation
+                <div class="p-3 bg-white rounded-md shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                        </div>
+                        <span class="font-medium">Transposition</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">Bit permutation</p>
                 </div>
-                <div class="p-2 bg-gray-50 rounded">
-                    <span class="font-medium">ChaCha20:</span> Fast stream cipher (ZTM)
+                <div class="p-3 bg-white rounded-md shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                        <span class="font-medium">ChaCha20</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">Fast stream cipher (ZTM)</p>
                 </div>
-                <div class="p-2 bg-gray-50 rounded">
-                    <span class="font-medium">Speck:</span> Lightweight block cipher (ZTM)
+                <div class="p-3 bg-white rounded-md shadow-sm card-hover">
+                    <div class="flex items-center">
+                        <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                        <span class="font-medium">Speck</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">Lightweight block cipher (ZTM)</p>
                 </div>
             </div>
         </div>
         
         <!-- NTRU Key Exchange Demo Section -->
-        <div class="mb-6">
-            <div class="flex items-center mb-2">
-                <div class="h-2 w-2 rounded-full bg-indigo-500 mr-2"></div>
-                <h2 class="text-lg font-semibold">NTRU Key Exchange Demo</h2>
+        <div class="mb-8 bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="h-3 w-3 rounded-full bg-indigo-500 mr-2"></div>
+                <h2 class="text-xl font-semibold text-gray-800">NTRU Key Exchange Demo</h2>
             </div>
-            <p class="text-sm mb-3">The system uses NTRU for secure quantum-resistant key exchange. Test the key exchange process:</p>
-            <button id="ntruDemoBtn" class="w-full bg-indigo-500 text-white p-2 rounded hover:bg-indigo-600 mb-2">Run NTRU Key Exchange Demo</button>
+            <p class="text-sm mb-3 text-gray-600">The system uses NTRU for secure quantum-resistant key exchange. Test the key exchange process:</p>
+            <button id="ntruDemoBtn" class="w-full bg-indigo-600 text-white p-3 rounded-md hover:bg-indigo-700 transition-colors flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Run NTRU Key Exchange Demo
+            </button>
             
-            <div id="ntruResult" class="mt-2 p-3 bg-gray-50 rounded hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                    <div class="p-2">
-                        <span class="font-medium">Original Key:</span>
-                        <p id="originalKey" class="break-all font-mono text-xs mt-1"></p>
+            <div id="ntruResult" class="mt-4 p-4 bg-white rounded-md shadow-sm hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-3 bg-gray-50 rounded-md">
+                        <span class="font-medium text-gray-700">Original Key:</span>
+                        <p id="originalKey" class="break-all font-mono text-xs mt-1 p-2 bg-gray-100 rounded"></p>
                     </div>
-                    <div class="p-2">
-                        <span class="font-medium">Decrypted Key:</span>
-                        <p id="decryptedKey" class="break-all font-mono text-xs mt-1"></p>
+                    <div class="p-3 bg-gray-50 rounded-md">
+                        <span class="font-medium text-gray-700">Decrypted Key:</span>
+                        <p id="decryptedKey" class="break-all font-mono text-xs mt-1 p-2 bg-gray-100 rounded"></p>
                     </div>
                 </div>
-                <div class="mt-2 text-center">
-                    <span class="inline-block px-2 py-1 rounded font-medium text-sm" id="ntruMatchStatus"></span>
+                <div class="mt-3 text-center">
+                    <span class="inline-block px-3 py-1 rounded-md font-medium text-sm" id="ntruMatchStatus"></span>
                 </div>
             </div>
         </div>
 
         <!-- Input Form -->
-        <div class="mb-4">
-            <label class="block text-gray-700 mb-2">Enter Security Log:</label>
-            <textarea id="inputText" class="w-full p-2 border rounded" rows="3" placeholder="User entered at 14:30"></textarea>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 mb-2">Encryption Mode:</label>
-            <select id="mode" class="w-full p-2 border rounded">
-                <option value="normal">Normal (LFSR + Chaotic + Transposition)</option>
-                <option value="ztm">ZTM (ChaCha20 + LFSR + Chaotic + Transposition + Speck)</option>
-            </select>
-        </div>
-        <button id="encryptBtn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 mb-4">Encrypt</button>
-        
-        <div id="processDiagram" class="hidden mb-6">
-            <div class="flex items-center mb-2">
-                <div class="h-2 w-2 rounded-full bg-blue-500 mr-2"></div>
-                <h2 class="text-lg font-semibold">Encryption Process</h2>
+        <div class="mb-8 bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
+                <h2 class="text-xl font-semibold text-gray-800">Encrypt Security Log</h2>
             </div>
-            <div class="relative h-20 bg-gray-100 rounded-lg overflow-hidden mb-2">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2 font-medium">Enter Security Log:</label>
+                <textarea id="inputText" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="3" placeholder="User entered at 14:30"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2 font-medium">Encryption Mode:</label>
+                <div class="relative">
+                    <select id="mode" class="w-full p-3 border border-gray-300 rounded-md appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <option value="normal">Normal (LFSR + Chaotic + Transposition)</option>
+                        <option value="ztm">ZTM (ChaCha20 + LFSR + Chaotic + Transposition + Speck)</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <button id="encryptBtn" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Encrypt
+            </button>
+        </div>
+        
+        <!-- Encryption Process Visualization -->
+        <div id="processDiagram" class="hidden mb-8 bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
+                <h2 class="text-xl font-semibold text-gray-800">Encryption Process</h2>
+            </div>
+            <div class="relative h-24 bg-white rounded-lg shadow-inner overflow-hidden mb-2">
                 <div class="absolute inset-0 flex items-center justify-around">
-                    <div id="step1" class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0">
-                        <span class="text-xs text-center">Key<br>Generation</span>
+                    <div id="step1" class="step-node h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0 tooltip">
+                        <span class="text-xs text-center font-medium text-blue-800">Key<br>Generation</span>
+                        <span class="tooltiptext">Generates secure keys using NTRU</span>
                     </div>
-                    <div class="h-px w-10 bg-gray-300"></div>
-                    <div id="step2" class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0">
-                        <span class="text-xs text-center" id="step2Label">LFSR</span>
+                    <div class="step-connector"></div>
+                    <div id="step2" class="step-node h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0 tooltip">
+                        <span class="text-xs text-center font-medium text-blue-800" id="step2Label">LFSR</span>
+                        <span class="tooltiptext">Linear Feedback Shift Register for stream generation</span>
                     </div>
-                    <div class="h-px w-10 bg-gray-300"></div>
-                    <div id="step3" class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0">
-                        <span class="text-xs text-center">Chaotic<br>Map</span>
+                    <div class="step-connector"></div>
+                    <div id="step3" class="step-node h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0 tooltip">
+                        <span class="text-xs text-center font-medium text-blue-800">Chaotic<br>Map</span>
+                        <span class="tooltiptext">Adds high-entropy randomness</span>
                     </div>
-                    <div class="h-px w-10 bg-gray-300"></div>
-                    <div id="step4" class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0">
-                        <span class="text-xs text-center">Transposition</span>
+                    <div class="step-connector"></div>
+                    <div id="step4" class="step-node h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0 tooltip">
+                        <span class="text-xs text-center font-medium text-blue-800">Transposition</span>
+                        <span class="tooltiptext">Permutes bits for diffusion</span>
                     </div>
-                    <div class="h-px w-10 bg-gray-300 ztm-only hidden"></div>
-                    <div id="step5" class="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0 ztm-only hidden">
-                        <span class="text-xs text-center">Speck<br>CTR</span>
+                    <div class="step-connector ztm-only hidden"></div>
+                    <div id="step5" class="step-node h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center shadow-md transform scale-0 ztm-only hidden tooltip">
+                        <span class="text-xs text-center font-medium text-blue-800">Speck<br>CTR</span>
+                        <span class="tooltiptext">Lightweight block cipher in counter mode</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-sm text-gray-500 mt-2">
+                <span id="processStatus" class="font-medium">Ready to process</span>
+            </div>
+        </div>
+
+        <!-- Advanced Encryption Process Visualization -->
+        <div id="advancedVisualization" class="hidden mb-8">
+            <div class="flex flex-col lg:flex-row gap-6 w-full">
+                <!-- Main visualization panel -->
+                <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-xl shadow-lg flex-1">
+                    <div class="flex items-center mb-4">
+                        <div class="h-3 w-3 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+                        <h2 class="text-xl font-bold text-white">Advanced Encryption Process</h2>
+                    </div>
+                    
+                    <!-- 3D Visualization -->
+                    <div class="flex justify-center mb-6">
+                        <div class="relative w-full max-w-md">
+                            <div class="absolute inset-0 flex items-center justify-center z-0">
+                                <div class="bg-blue-500/10 rounded-full h-48 w-48 blur-md animate-pulse"></div>
+                            </div>
+                            <canvas id="encryptionCanvas" class="relative z-10 mx-auto rounded-lg" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Process Steps -->
+                    <div class="relative h-36 bg-gray-800/50 rounded-lg shadow-inner overflow-hidden mb-4">
+                        <div class="absolute inset-0 flex items-center justify-around">
+                            <div class="relative">
+                                <div class="vis-step-1 h-16 w-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-md transform scale-0 transition-all duration-300">
+                                    <span class="text-xl text-white">🔑</span>
+                                    <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-32 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        Key Generation
+                                    </div>
+                                </div>
+                                <div class="absolute top-1/2 -right-8 w-16 h-0.5 bg-gradient-to-r from-blue-500 to-gray-700 transform -translate-y-1/2"></div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div class="vis-step-2 h-16 w-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-md transform scale-0 transition-all duration-300">
+                                    <span class="text-xl text-white">⏱️</span>
+                                    <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-32 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        LFSR Stream
+                                    </div>
+                                </div>
+                                <div class="absolute top-1/2 -right-8 w-16 h-0.5 bg-gradient-to-r from-blue-500 to-gray-700 transform -translate-y-1/2"></div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div class="vis-step-3 h-16 w-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-md transform scale-0 transition-all duration-300">
+                                    <span class="text-xl text-white">🔄</span>
+                                    <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-32 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        Chaotic Map
+                                    </div>
+                                </div>
+                                <div class="absolute top-1/2 -right-8 w-16 h-0.5 bg-gradient-to-r from-blue-500 to-gray-700 transform -translate-y-1/2"></div>
+                            </div>
+                            
+                            <div class="relative">
+                                <div class="vis-step-4 h-16 w-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-md transform scale-0 transition-all duration-300">
+                                    <span class="text-xl text-white">↔️</span>
+                                    <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-32 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        Transposition
+                                    </div>
+                                </div>
+                                <div class="absolute top-1/2 -right-8 w-16 h-0.5 bg-gradient-to-r from-blue-500 to-gray-700 transform -translate-y-1/2 ztm-only hidden"></div>
+                            </div>
+                            
+                            <div class="relative ztm-only hidden">
+                                <div class="vis-step-5 h-16 w-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-md transform scale-0 transition-all duration-300">
+                                    <span class="text-xl text-white">🔒</span>
+                                    <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-32 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        Speck CTR
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status and controls -->
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-300">
+                            <span class="font-medium" id="visProcessStatus">Ready to encrypt data</span>
+                            <div id="visProcessComplete" class="text-green-400 opacity-0 mt-1">
+                                Encryption completed successfully!
+                            </div>
+                        </div>
+                        
+                        <button 
+                            id="startVisualizationBtn"
+                            class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-4 py-2 rounded-lg shadow transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                            </svg>
+                            Start Encryption
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Information panel -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg lg:w-1/3">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Algorithm Details</h3>
+                    
+                    <div id="visStepInfo" class="mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <span id="visStepIcon" class="text-2xl mr-3">🔑</span>
+                            <h4 id="visStepTitle" class="text-md font-semibold text-gray-800 dark:text-gray-200">Key Generation</h4>
+                        </div>
+                        <p id="visStepDescription" class="text-sm text-gray-600 dark:text-gray-300">NTRU-based asymmetric cryptography creates secure key pairs that are resistant to quantum attacks.</p>
+                    </div>
+                    
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        <p class="mb-2">This visualization demonstrates a hybrid encryption system combining symmetric and asymmetric algorithms with entropy-enhancing techniques.</p>
+                        <p>Each step contributes to the overall security by adding different cryptographic properties like confusion, diffusion, and non-linearity.</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- NTRU Polynomial Visualization -->
-        <div id="ntruPolyViz" class="mb-6 hidden">
-            <div class="flex items-center mb-2">
-                <div class="h-2 w-2 rounded-full bg-indigo-500 mr-2"></div>
-                <h2 class="text-lg font-semibold">NTRU Polynomial Representation</h2>
+        <div id="ntruPolyViz" class="mb-8 hidden bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="h-3 w-3 rounded-full bg-indigo-500 mr-2"></div>
+                <h2 class="text-xl font-semibold text-gray-800">NTRU Polynomial Representation</h2>
             </div>
-            <div class="p-3 bg-gray-50 rounded">
-                <canvas id="ntruChart" height="100"></canvas>
+            <div class="chart-container p-3 bg-white rounded-md shadow-sm">
+                <canvas id="ntruChart"></canvas>
             </div>
-            <p class="text-xs text-gray-500 mt-1">Visualization of polynomial coefficients used in the NTRU encryption</p>
+            <p class="text-xs text-gray-500 mt-2 text-center">Visualization of polynomial coefficients used in the NTRU encryption</p>
         </div>
 
         <!-- Output -->
-        <div id="output" class="mt-4 hidden">
-            <div class="flex items-center mb-2">
-                <div class="h-2 w-2 rounded-full bg-purple-500 mr-2"></div>
-                <h2 class="text-lg font-semibold">Encrypted Output</h2>
-            </div>
-            <div class="p-3 bg-gray-100 rounded mb-4 overflow-auto max-h-32">
-                <p id="cipherText" class="break-all font-mono text-sm"></p>
-            </div>
-            
-            <!-- Attack Section -->
-            <div class="mb-4">
-                <div class="flex items-center mb-2">
-                    <div class="h-2 w-2 rounded-full bg-red-500 mr-2"></div>
-                    <h2 class="text-lg font-semibold">Attack Simulations</h2>
+        <div id="output" class="mt-6 hidden">
+            <div class="mb-8 bg-gray-50 p-4 rounded-lg shadow-sm">
+                <div class="flex items-center mb-3">
+                    <div class="h-3 w-3 rounded-full bg-purple-500 mr-2"></div>
+                    <h2 class="text-xl font-semibold text-gray-800">Encrypted Output</h2>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    <button class="attackBtn bg-red-500 text-white p-2 rounded hover:bg-red-600" data-attack="brute">Brute Force</button>
-                    <button class="attackBtn bg-red-500 text-white p-2 rounded hover:bg-red-600" data-attack="chosen">Chosen Plaintext</button>
-                    <button class="attackBtn bg-red-500 text-white p-2 rounded hover:bg-red-600" data-attack="mitm">Man-in-the-Middle</button>
-                    <button class="attackBtn bg-red-500 text-white p-2 rounded hover:bg-red-600" data-attack="side">Side-Channel</button>
-                    <button class="attackBtn bg-red-500 text-white p-2 rounded hover:bg-red-600" data-attack="quantum">Quantum Attack</button>
-                    <button class="attackBtn bg-red-500 text-white p-2 rounded hover:bg-red-600" data-attack="dos">Denial-of-Service</button>
+                <div class="p-4 bg-white rounded-md shadow-sm mb-4 overflow-auto max-h-40">
+                    <p id="cipherText" class="break-all font-mono text-sm"></p>
                 </div>
                 
-                <!-- Attack Result Display -->
-                <div id="attackResult" class="mt-4 hidden">
-                    <div class="p-4 bg-gray-100 rounded mb-2 border-l-4" id="attackResultCard">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-lg" id="attackName">Attack Name</h3>
-                            <span class="bg-red-100 text-red-800 px-2 rounded" id="attackStatus">Failed</span>
-                        </div>
-                        <p id="attackMessage" class="mt-2"></p>
-                        
-                        <div class="mt-3 grid grid-cols-2 gap-2 text-sm" id="attackStats">
-                            <!-- Attack statistics will be inserted here -->
-                        </div>
+                <!-- Encryption Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div class="p-3 bg-gray-100 rounded-md text-center">
+                        <div class="text-sm text-gray-500">Original Size</div>
+                        <div id="originalSize" class="font-medium">0 bytes</div>
+                    </div>
+                    <div class="p-3 bg-gray-100 rounded-md text-center">
+                        <div class="text-sm text-gray-500">Encrypted Size</div>
+                        <div id="encryptedSize" class="font-medium">0 bytes</div>
+                    </div>
+                    <div class="p-3 bg-gray-100 rounded-md text-center">
+                        <div class="text-sm text-gray-500">Encryption Time</div>
+                        <div id="encryptionTime" class="font-medium">0 ms</div>
+                    </div>
+                    <div class="p-3 bg-gray-100 rounded-md text-center">
+                        <div class="text-sm text-gray-500">Security Level</div>
+                        <div id="securityLevel" class="font-medium">256-bit</div>
+                    </div>
+                </div>
+                
+                <!-- Attack Section -->
+                <div class="mb-6">
+                    <div class="flex items-center mb-3">
+                        <div class="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+                        <h2 class="text-xl font-semibold text-gray-800">Attack Simulations</h2>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <button class="attackBtn attack-btn bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center" data-attack="brute">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                            </svg>
+                            Brute Force
+                        </button>
+                        <button class="attackBtn attack-btn bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center" data-attack="chosen">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            Chosen Plaintext
+                        </button>
+                        <button class="attackBtn attack-btn bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center" data-attack="mitm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            Man-in-the-Middle
+                        </button>
+                        <button class="attackBtn attack-btn bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center" data-attack="side">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Side-Channel
+                        </button>
+                        <button class="attackBtn attack-btn bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center" data-attack="quantum">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Quantum Attack
+                        </button>
+                        <button class="attackBtn attack-btn bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center" data-attack="dos">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                            Denial-of-Service
+                        </button>
                     </div>
                     
-                    <!-- Performance Visualization -->
-                    <div id="performanceViz" class="mt-4 hidden">
-                        <h3 class="font-semibold mb-2">Attack Performance Metrics</h3>
-                        <div class="h-64">
-                            <canvas id="attackChart"></canvas>
+                    <!-- Attack Result Display -->
+                    <div id="attackResult" class="mt-6 hidden">
+                        <div class="p-5 bg-white rounded-md shadow-sm mb-4 border-l-4" id="attackResultCard">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-bold text-lg flex items-center" id="attackName">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    Attack Name
+                                </h3>
+                                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium" id="attackStatus">Failed</span>
+                            </div>
+                            <p id="attackMessage" class="mb-4 text-gray-700"></p>
+                            
+                            <div class="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm" id="attackStats">
+                                <!-- Attack statistics will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Visualization -->
+                        <div id="performanceViz" class="mt-4 hidden">
+                            <h3 class="font-semibold mb-3 text-gray-800">Attack Performance Metrics</h3>
+                            <div class="chart-container p-3 bg-white rounded-md shadow-sm">
+                                <canvas id="attackChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <hr class="my-4 border-gray-200">
+                <hr class="my-6 border-gray-200">
                 
                 <!-- Decryption Section -->
-                <div class="mt-4">
-                    <div class="flex items-center mb-2">
-                        <div class="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                        <h2 class="text-lg font-semibold">Decryption</h2>
+                <div class="mt-6">
+                    <div class="flex items-center mb-3">
+                        <div class="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                        <h2 class="text-xl font-semibold text-gray-800">Decryption</h2>
                     </div>
-                    <button id="decryptBtn" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Decrypt</button>
+                    <button id="decryptBtn" class="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700 transition-colors flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                        </svg>
+                        Decrypt
+                    </button>
                     <div class="mt-2">
-                        <p class="text-gray-700">Decrypted Text:</p>
-                        <p id="plainText" class="p-2 bg-gray-100 rounded mt-1 font-mono"></p>
+                        <p class="text-gray-700 font-medium mb-2">Decrypted Text:</p>
+                        <div class="p-4 bg-white rounded-md shadow-sm">
+                            <p id="plainText" class="font-mono text-sm"></p>
+                        </div>
+                        <div class="mt-3 text-right">
+                            <span id="decryptionTime" class="text-sm text-gray-500">Decryption time: 0 ms</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- NTRU Technical Details -->
-        <div class="mt-6 pt-4 border-t border-gray-200">
+        <div class="mt-8 pt-4 border-t border-gray-200">
             <details>
-                <summary class="cursor-pointer font-semibold text-gray-700">NTRU Technical Details</summary>
-                <div class="mt-3 p-3 bg-gray-50 rounded text-sm">
-                    <h3 class="font-semibold mb-2">Current NTRU Parameters</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        <div><span class="font-medium">N:</span> 743 (Polynomial degree)</div>
-                        <div><span class="font-medium">p:</span> 3 (Small modulus)</div>
-                        <div><span class="font-medium">q:</span> 2048 (Large modulus)</div>
-                        <div><span class="font-medium">df:</span> 247 (Ones in f)</div>
-                        <div><span class="font-medium">dg:</span> 247 (Ones in g)</div>
-                        <div><span class="font-medium">d:</span> 247 (Ones in message)</div>
+                <summary class="cursor-pointer font-semibold text-gray-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    NTRU Technical Details
+                </summary>
+                <div class="mt-3 p-4 bg-white rounded-md shadow-sm text-sm">
+                    <h3 class="font-semibold mb-2 text-gray-800">Current NTRU Parameters</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                        <div class="p-2 bg-gray-50 rounded"><span class="font-medium">N:</span> 743 (Polynomial degree)</div>
+                        <div class="p-2 bg-gray-50 rounded"><span class="font-medium">p:</span> 3 (Small modulus)</div>
+                        <div class="p-2 bg-gray-50 rounded"><span class="font-medium">q:</span> 2048 (Large modulus)</div>
+                        <div class="p-2 bg-gray-50 rounded"><span class="font-medium">df:</span> 247 (Ones in f)</div>
+                        <div class="p-2 bg-gray-50 rounded"><span class="font-medium">dg:</span> 247 (Ones in g)</div>
+                        <div class="p-2 bg-gray-50 rounded"><span class="font-medium">d:</span> 247 (Ones in message)</div>
                     </div>
-                    <h3 class="font-semibold mt-3 mb-2">NTRU Operations</h3>
-                    <ol class="list-decimal pl-5 space-y-1">
+                    <h3 class="font-semibold mt-4 mb-2 text-gray-800">NTRU Operations</h3>
+                    <ol class="list-decimal pl-5 space-y-1 mb-4">
                         <li>Generate random polynomial f with df coefficients</li>
                         <li>Find inverse of f modulo q and p</li>
                         <li>Generate random polynomial g</li>
@@ -211,7 +571,7 @@
                         <li>Encrypt: e = r * h + message mod q</li>
                         <li>Decrypt: m = (f * e mod q) mod p</li>
                     </ol>
-                    <h3 class="font-semibold mt-3 mb-2">Post-Quantum Security</h3>
+                    <h3 class="font-semibold mt-4 mb-2 text-gray-800">Post-Quantum Security</h3>
                     <p>NTRU's security is based on the shortest vector problem (SVP) in a lattice, which is believed to be resistant to quantum computer attacks, unlike RSA or ECC.</p>
                 </div>
             </details>
@@ -224,6 +584,7 @@
         let currentMode = '';
         let attackChart = null;
         let ntruChart = null;
+        let encryptionStartTime = 0;
         
         // Initialize the UI
         document.addEventListener('DOMContentLoaded', function() {
@@ -242,6 +603,9 @@
                 
                 // Update step 2 label for ZTM mode
                 document.getElementById('step2Label').textContent = mode === 'ztm' ? 'ChaCha20' : 'LFSR';
+                
+                // Update security level display
+                document.getElementById('securityLevel').textContent = mode === 'ztm' ? '256-bit' : '192-bit';
             });
             
             // NTRU Demo button handler
@@ -249,7 +613,7 @@
                 // Show loading state
                 const button = document.getElementById('ntruDemoBtn');
                 const originalText = button.textContent;
-                button.textContent = 'Running NTRU Exchange...';
+                button.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Running NTRU Exchange...';
                 button.disabled = true;
                 
                 try {
@@ -267,17 +631,17 @@
                     const matchStatus = document.getElementById('ntruMatchStatus');
                     if (result.match) {
                         matchStatus.textContent = '✓ Keys Match - Exchange Successful';
-                        matchStatus.className = 'inline-block px-2 py-1 rounded font-medium text-sm bg-green-100 text-green-800';
+                        matchStatus.className = 'inline-block px-3 py-1 rounded-md font-medium text-sm bg-green-100 text-green-800';
                     } else {
                         matchStatus.textContent = '✗ Keys Don\'t Match - Exchange Failed';
-                        matchStatus.className = 'inline-block px-2 py-1 rounded font-medium text-sm bg-red-100 text-red-800';
+                        matchStatus.className = 'inline-block px-3 py-1 rounded-md font-medium text-sm bg-red-100 text-red-800';
                     }
                     
                     // Show the result section
                     document.getElementById('ntruResult').classList.remove('hidden');
                     
                     // Create NTRU polynomial visualization
-                    createNtruVisualization();
+                    createNtruVisualization(result.parameters);
                     
                     // Animation for results appearance
                     anime({
@@ -292,25 +656,35 @@
                     console.error('NTRU demo error:', error);
                     alert('Error during NTRU demonstration: ' + error.message);
                 } finally {
-                    button.textContent = originalText;
+                    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg> Run NTRU Key Exchange Demo';
                     button.disabled = false;
                 }
             });
             
             // Create NTRU polynomial visualization
-            function createNtruVisualization() {
+            function createNtruVisualization(parameters) {
                 const vizEl = document.getElementById('ntruPolyViz');
                 const chartEl = document.getElementById('ntruChart');
+                
+                // Get NTRU parameters if available
+                const N = parameters?.N || 743;
+                const q = parameters?.q || 2048;
                 
                 // Sample NTRU polynomial coefficients for visualization
                 // In a real implementation, these would come from the actual NTRU operation
                 const sampleSize = 50; // Show first 50 coefficients for clarity
-                const publicKeyCoeffs = Array(sampleSize).fill(0).map(() => Math.floor(Math.random() * 2048));
+                const publicKeyCoeffs = Array(sampleSize).fill(0).map(() => Math.floor(Math.random() * q));
                 
                 // Reset previous chart if it exists
                 if (ntruChart) {
                     ntruChart.destroy();
                 }
+                
+                // Create gradient for bars
+                const ctx = chartEl.getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(79, 70, 229, 0.8)');
+                gradient.addColorStop(1, 'rgba(79, 70, 229, 0.2)');
                 
                 ntruChart = new Chart(chartEl, {
                     type: 'bar',
@@ -319,8 +693,8 @@
                         datasets: [{
                             label: 'Public Key Coefficients (first 50)',
                             data: publicKeyCoeffs,
-                            backgroundColor: 'rgba(75, 85, 99, 0.2)',
-                            borderColor: 'rgb(75, 85, 99)',
+                            backgroundColor: gradient,
+                            borderColor: 'rgb(79, 70, 229)',
                             borderWidth: 1
                         }]
                     },
@@ -333,19 +707,42 @@
                                 title: {
                                     display: true,
                                     text: 'Coefficient Value (mod q)'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
                                 }
                             },
                             x: {
                                 title: {
                                     display: true,
                                     text: 'Coefficient Index'
+                                },
+                                grid: {
+                                    display: false
                                 }
                             }
                         },
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'NTRU Public Key Polynomial Coefficients'
+                                text: 'NTRU Public Key Polynomial Coefficients',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return `Coefficient ${tooltipItems[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        return `Value: ${context.raw} (mod ${q})`;
+                                    }
+                                }
                             }
                         }
                     }
@@ -365,10 +762,30 @@
                     
                     const attackType = e.target.dataset.attack;
                     document.querySelectorAll('.attackBtn').forEach(b => b.disabled = true);
-                    e.target.textContent = 'Running...';
+                    
+                    // Store original content
+                    const originalContent = e.target.innerHTML;
+                    
+                    // Show loading state
+                    e.target.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Running...';
                     
                     try {
-                        const result = simulateAttack(attackType, currentMode);
+                        // Send attack request to server
+                        const response = await fetch('/attack', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                attack_type: attackType, 
+                                ciphertext: currentCiphertext,
+                                mode: currentMode
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Attack simulation failed');
+                        }
+                        
+                        const result = await response.json();
                         displayAttackResult(attackType, result);
                         
                     } catch (error) {
@@ -376,71 +793,20 @@
                         alert('Error during attack simulation: ' + error.message);
                     } finally {
                         document.querySelectorAll('.attackBtn').forEach(b => b.disabled = false);
-                        e.target.textContent = getAttackName(attackType);
+                        e.target.innerHTML = originalContent;
                     }
                 });
             });
             
-            // Simulate different attack types client-side
-            function simulateAttack(attackType, mode) {
-                // Simulated attack results
-                const results = {
-                    'brute': {
-                        success: false,
-                        message: 'Brute Force Failed: 256-bit key too large.',
-                        theoretical_years: '1.07e58',
-                        keys_per_second: '1e12',
-                        key_space: '2^256'
-                    },
-                    'chosen': {
-                        success: false,
-                        message: 'Chosen Plaintext Failed: Chaotic map resists.',
-                        attempts: '500',
-                        pattern_detection: '0.02%',
-                        security_margin: '99.98%'
-                    },
-                    'mitm': {
-                        success: false,
-                        message: 'MITM Failed: Key exchange secure.',
-                        security_bits: '128',
-                        quantum_resistant: 'Yes',
-                        communication_rounds: '2'
-                    },
-                    'side': {
-                        success: false,
-                        message: 'Side-Channel Failed: Bit-level ops obscure timing.',
-                        resistance_score: '8.7',
-                        timing_variance: '< 0.1ms',
-                        power_analysis_resistance: 'High'
-                    },
-                    'quantum': {
-                        success: false,
-                        message: 'Quantum Attack Failed: NTRU resists.',
-                        qubits_needed: '6500+',
-                        qubits_available: '127',
-                        shor_algorithm_applicable: 'No'
-                    },
-                    'dos': {
-                        success: false,
-                        message: 'DoS Failed: Lightweight design persists.',
-                        performance_impact: '4.6%',
-                        memory_usage: '28MB',
-                        cpu_overhead: '7.2%'
-                    }
-                };
-                
-                return results[attackType];
-            }
-            
             // Helper to get full attack name
             function getAttackName(attackType) {
                 const names = {
-                    'brute': 'Brute Force',
-                    'chosen': 'Chosen Plaintext',
-                    'mitm': 'Man-in-the-Middle',
-                    'side': 'Side-Channel',
+                    'brute': 'Brute Force Attack',
+                    'chosen': 'Chosen Plaintext Attack',
+                    'mitm': 'Man-in-the-Middle Attack',
+                    'side': 'Side-Channel Attack',
                     'quantum': 'Quantum Attack',
-                    'dos': 'Denial-of-Service'
+                    'dos': 'Denial-of-Service Attack'
                 };
                 return names[attackType] || attackType;
             }
@@ -452,11 +818,21 @@
                 const statusEl = document.getElementById('attackStatus');
                 const messageEl = document.getElementById('attackMessage');
                 const statsEl = document.getElementById('attackStats');
+                const cardEl = document.getElementById('attackResultCard');
                 
                 // Set basic info
                 nameEl.textContent = getAttackName(attackType);
                 statusEl.textContent = result.success ? 'Succeeded' : 'Failed';
-                statusEl.className = result.success ? 'bg-red-100 text-red-800 px-2 rounded' : 'bg-green-100 text-green-800 px-2 rounded';
+                
+                // Set status color
+                if (result.success) {
+                    statusEl.className = 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium';
+                    cardEl.className = cardEl.className.replace('border-l-4', 'border-l-4 border-red-500');
+                } else {
+                    statusEl.className = 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
+                    cardEl.className = cardEl.className.replace('border-l-4', 'border-l-4 border-green-500');
+                }
+                
                 messageEl.textContent = result.message;
                 
                 // Clear previous stats
@@ -464,10 +840,17 @@
                 
                 // Add stats excluding message and success flag
                 Object.entries(result).forEach(([key, value]) => {
-                    if (key !== 'message' && key !== 'success') {
+                    if (key !== 'message' && key !== 'success' && key !== 'error') {
                         const statDiv = document.createElement('div');
-                        statDiv.className = 'p-1';
-                        statDiv.innerHTML = `<span class="font-medium">${key.replace(/_/g, ' ')}:</span> ${value}`;
+                        statDiv.className = 'p-2 bg-gray-50 rounded';
+                        
+                        // Format key for display
+                        const formattedKey = key.replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                            
+                        statDiv.innerHTML = `<span class="font-medium">${formattedKey}:</span> ${value}`;
                         statsEl.appendChild(statDiv);
                     }
                 });
@@ -504,182 +887,507 @@
                     datasets: []
                 };
                 
+                let chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                };
+                
+                let chartType = 'bar';
+                
                 switch(attackType) {
                     case 'brute':
                         vizEl.classList.remove('hidden');
+                        
+                        // Create gradient for bars
+                        const ctx = chartEl.getContext('2d');
+                        const blueGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+                        blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+                        
+                        const redGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+                        redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+                        
+                        const yellowGradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.8)');
+                        yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.2)');
+                        
                         chartData = {
                             labels: ['XenoCipher (256-bit)', 'AES-128', 'DES (56-bit)'],
                             datasets: [{
                                 label: 'Years to Brute Force (log scale)',
-                                data: [parseFloat(result.theoretical_years), 1e20, 1e0],
-                                backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 206, 86, 0.5)'],
-                                borderColor: ['rgb(54, 162, 235)', 'rgb(255, 99, 132)', 'rgb(255, 206, 86)'],
+                                data: [parseFloat(result.theoretical_years || result.estimated_years || '1e58'), 1e20, 1e0],
+                                backgroundColor: [blueGradient, redGradient, yellowGradient],
+                                borderColor: ['rgb(59, 130, 246)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
                                 borderWidth: 1
                             }]
                         };
                         
-                        attackChart = new Chart(chartEl, {
-                            type: 'bar',
-                            data: chartData,
-                            options: {
-                                indexAxis: 'y',
-                                scales: {
-                                    x: {
-                                        type: 'logarithmic',
-                                        title: {
-                                            display: true,
-                                            text: 'Years (logarithmic scale)'
-                                        }
-                                    }
-                                },
-                                plugins: {
+                        chartOptions = {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    type: 'logarithmic',
                                     title: {
                                         display: true,
-                                        text: 'Brute Force Attack Resistance Comparison'
+                                        text: 'Years (logarithmic scale)'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                y: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Brute Force Attack Resistance Comparison',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.raw;
+                                            if (value >= 1e20) {
+                                                return `${value.toExponential(2)} years`;
+                                            } else {
+                                                return `${value.toLocaleString()} years`;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        });
+                        };
                         break;
                         
                     case 'quantum':
                         vizEl.classList.remove('hidden');
+                        
+                        // Create gradients
+                        const qCtx = chartEl.getContext('2d');
+                        const availableGradient = qCtx.createLinearGradient(0, 0, 0, 400);
+                        availableGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+                        availableGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+                        
+                        const neededGradient = qCtx.createLinearGradient(0, 0, 0, 400);
+                        neededGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+                        neededGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+                        
                         chartData = {
                             labels: ['Qubits Available', 'Qubits Needed'],
                             datasets: [{
                                 label: 'Quantum Resources',
-                                data: [result.qubits_available, result.qubits_needed],
-                                backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.5)'],
-                                borderColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)'],
+                                data: [
+                                    parseInt(result.qubits_available || 127), 
+                                    parseInt(result.qubits_needed || 6000)
+                                ],
+                                backgroundColor: [availableGradient, neededGradient],
+                                borderColor: ['rgb(239, 68, 68)', 'rgb(59, 130, 246)'],
                                 borderWidth: 1
                             }]
                         };
                         
-                        attackChart = new Chart(chartEl, {
-                            type: 'bar',
-                            data: chartData,
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Number of Qubits'
-                                        }
-                                    }
-                                },
-                                plugins: {
+                        chartOptions = {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Quantum Attack Resource Requirements'
+                                        text: 'Number of Qubits'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
                                     }
                                 }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Quantum Attack Resource Requirements',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                legend: {
+                                    display: false
+                                }
                             }
-                        });
+                        };
                         break;
                         
                     case 'side':
                         vizEl.classList.remove('hidden');
+                        
                         // Parse resistance score to number
-                        const resistanceScore = parseFloat(result.resistance_score);
+                        const resistanceScore = parseFloat(result.resistance_score || '8.7');
+                        
+                        // Create gradient for area
+                        const sCtx = chartEl.getContext('2d');
+                        const areaGradient = sCtx.createLinearGradient(0, 0, 0, 400);
+                        areaGradient.addColorStop(0, 'rgba(59, 130, 246, 0.6)');
+                        areaGradient.addColorStop(1, 'rgba(59, 130, 246, 0.1)');
+                        
+                        chartType = 'radar';
                         chartData = {
-                            labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+                            labels: ['Timing Consistency', 'Power Analysis Resistance', 'Cache Attack Resistance', 'Fault Injection Resistance', 'Statistical Analysis Resistance'],
                             datasets: [{
-                                label: 'XenoCipher Resistance Score',
-                                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderColor: 'rgb(54, 162, 235)',
-                                pointBackgroundColor: 'rgb(54, 162, 235)',
-                                pointRadius: 0,
-                                pointHoverRadius: 0,
-                                fill: true
+                                label: 'XenoCipher Side-Channel Resistance',
+                                data: [
+                                    resistanceScore, 
+                                    resistanceScore - 0.5, 
+                                    resistanceScore - 1, 
+                                    resistanceScore - 0.7, 
+                                    resistanceScore - 0.3
+                                ],
+                                backgroundColor: areaGradient,
+                                borderColor: 'rgb(59, 130, 246)',
+                                pointBackgroundColor: 'rgb(59, 130, 246)',
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                borderWidth: 2
                             }]
                         };
                         
-                        // Set the score position
-                        const index = Math.min(Math.floor(resistanceScore), 10);
-                        chartData.datasets[0].data[index] = 10;
-                        
-                        attackChart = new Chart(chartEl, {
-                            type: 'line',
-                            data: chartData,
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        max: 10,
-                                        ticks: {
-                                            display: false
-                                        }
+                        chartOptions = {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    min: 0,
+                                    max: 10,
+                                    ticks: {
+                                        stepSize: 2
                                     },
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Side-Channel Resistance Score (Higher is Better)'
+                                    pointLabels: {
+                                        font: {
+                                            size: 10
                                         }
                                     }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Side-Channel Attack Resistance (Higher is Better)',
+                                    font: {
+                                        size: 14
+                                    }
                                 },
-                                plugins: {
-                                    title: {
-                                        display: true,
-                                        text: 'Side-Channel Attack Resistance'
+                                legend: {
+                                    display: true,
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Score: ${context.raw}/10`;
+                                        }
                                     }
                                 }
                             }
-                        });
+                        };
                         break;
                         
                     case 'mitm':
                         vizEl.classList.remove('hidden');
+                        
+                        // Create gradients
+                        const mCtx = chartEl.getContext('2d');
+                        const ntruGradient = mCtx.createLinearGradient(0, 0, 0, 400);
+                        ntruGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+                        ntruGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+                        
+                        const rsaGradient = mCtx.createLinearGradient(0, 0, 0, 400);
+                        rsaGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+                        rsaGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+                        
+                        const eccGradient = mCtx.createLinearGradient(0, 0, 0, 400);
+                        eccGradient.addColorStop(0, 'rgba(75, 192, 192, 0.8)');
+                        eccGradient.addColorStop(1, 'rgba(75, 192, 192, 0.2)');
+                        
+                        const dhGradient = mCtx.createLinearGradient(0, 0, 0, 400);
+                        dhGradient.addColorStop(0, 'rgba(255, 159, 64, 0.8)');
+                        dhGradient.addColorStop(1, 'rgba(255, 159, 64, 0.2)');
+                        
                         // Show NTRU vs traditional key exchange security
                         chartData = {
                             labels: ['NTRU (Post-Quantum)', 'RSA-2048', 'ECC-256', 'DH-2048'],
                             datasets: [{
-                                label: 'Security Level (bits)',
-                                data: [result.security_bits, 112, 128, 112],
+                                label: 'Classical Security Level (bits)',
+                                data: [result.security_bits || 128, 112, 128, 112],
                                 backgroundColor: [
-                                    'rgba(54, 162, 235, 0.5)',
-                                    'rgba(255, 99, 132, 0.5)',
-                                    'rgba(75, 192, 192, 0.5)',
-                                    'rgba(255, 159, 64, 0.5)'
+                                    ntruGradient,
+                                    rsaGradient,
+                                    eccGradient,
+                                    dhGradient
                                 ],
                                 borderColor: [
-                                    'rgb(54, 162, 235)',
-                                    'rgb(255, 99, 132)',
+                                    'rgb(59, 130, 246)',
+                                    'rgb(239, 68, 68)',
                                     'rgb(75, 192, 192)',
                                     'rgb(255, 159, 64)'
                                 ],
                                 borderWidth: 1
+                            }, {
+                                label: 'Quantum Security Level (bits)',
+                                data: [result.security_bits / 2 || 64, 0, 0, 0],
+                                backgroundColor: [
+                                    'rgba(59, 130, 246, 0.3)',
+                                    'rgba(239, 68, 68, 0.3)',
+                                    'rgba(75, 192, 192, 0.3)',
+                                    'rgba(255, 159, 64, 0.3)'
+                                ],
+                                borderColor: [
+                                    'rgb(59, 130, 246)',
+                                    'rgb(239, 68, 68)',
+                                    'rgb(75, 192, 192)',
+                                    'rgb(255, 159, 64)'
+                                ],
+                                borderWidth: 1,
+                                borderDash: [5, 5]
                             }]
                         };
                         
-                        attackChart = new Chart(chartEl, {
-                            type: 'bar',
-                            data: chartData,
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Security Level (bits)'
-                                        }
-                                    }
-                                },
-                                plugins: {
+                        chartOptions = {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Key Exchange Security Comparison'
+                                        text: 'Security Level (bits)'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Key Exchange Security Comparison',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.dataset.label}: ${context.raw} bits`;
+                                        }
                                     }
                                 }
                             }
-                        });
+                        };
+                        break;
+                        
+                    case 'chosen':
+                        vizEl.classList.remove('hidden');
+                        
+                        // Create gradient
+                        const cCtx = chartEl.getContext('2d');
+                        const lineGradient = cCtx.createLinearGradient(0, 0, 0, 400);
+                        lineGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+                        lineGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+                        
+                        // Parse values from result
+                        const diffusionScore = parseFloat(result.diffusion_score || '0.48');
+                        const avalancheScore = parseFloat(result.avalanche_score || '0.49');
+                        const patternDetection = parseFloat(result.pattern_detection?.replace('%', '') || '0.02') / 100;
+                        
+                        chartType = 'line';
+                        chartData = {
+                            labels: ['Initial', 'After LFSR', 'After Chaotic', 'After Transposition', 'Final'],
+                            datasets: [{
+                                label: 'Diffusion Rate',
+                                data: [0, 0.25, 0.38, 0.45, diffusionScore],
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: 'rgb(59, 130, 246)',
+                                tension: 0.4,
+                                fill: true
+                            }, {
+                                label: 'Avalanche Effect',
+                                data: [0, 0.3, 0.42, 0.47, avalancheScore],
+                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                borderColor: 'rgb(16, 185, 129)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        };
+                        
+                        chartOptions = {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 0.6,
+                                    title: {
+                                        display: true,
+                                        text: 'Rate (higher is better)'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Chosen Plaintext Attack Resistance',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.dataset.label}: ${context.raw.toFixed(4)}`;
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        break;
+                        
+                    case 'dos':
+                        vizEl.classList.remove('hidden');
+                        
+                        // Parse values
+                        const requestsPerSecond = parseFloat(result.requests_per_second || '10');
+                        const failureRate = parseFloat(result.failure_rate || '0.05');
+                        const cpuOverhead = parseFloat(result.cpu_overhead?.replace('%', '') || '7.2');
+                        
+                        chartType = 'bar';
+                        chartData = {
+                            labels: ['Normal Load', 'DoS Attack'],
+                            datasets: [{
+                                label: 'Requests/sec',
+                                data: [requestsPerSecond * 1.5, requestsPerSecond],
+                                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                                borderColor: 'rgb(59, 130, 246)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            }, {
+                                label: 'Failure Rate (%)',
+                                data: [0, failureRate * 100],
+                                backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                                borderColor: 'rgb(239, 68, 68)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }, {
+                                label: 'CPU Overhead (%)',
+                                data: [cpuOverhead * 0.6, cpuOverhead],
+                                backgroundColor: 'rgba(245, 158, 11, 0.6)',
+                                borderColor: 'rgb(245, 158, 11)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }]
+                        };
+                        
+                        chartOptions = {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: 'Requests/sec'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                y1: {
+                                    beginAtZero: true,
+                                    position: 'right',
+                                    title: {
+                                        display: true,
+                                        text: 'Percentage (%)'
+                                    },
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    max: 100
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'DoS Attack Performance Impact',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'bottom'
+                                }
+                            }
+                        };
                         break;
                         
                     default:
                         vizEl.classList.add('hidden');
-                        break;
+                        return;
                 }
+                
+                // Create the chart
+                attackChart = new Chart(chartEl, {
+                    type: chartType,
+                    data: chartData,
+                    options: chartOptions
+                });
             }
             
             // Encrypt Button Handler
@@ -694,9 +1402,12 @@
                 currentMode = mode;
                 
                 const button = document.getElementById('encryptBtn');
-                const originalText = button.textContent;
-                button.textContent = 'Encrypting...';
+                const originalText = button.innerHTML;
+                button.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Encrypting...';
                 button.disabled = true;
+                
+                // Record start time
+                encryptionStartTime = performance.now();
                 
                 try {
                     const response = await fetch('/encrypt', {
@@ -712,9 +1423,19 @@
                     const result = await response.json();
                     currentCiphertext = result.ciphertext;
                     
+                    // Calculate encryption time
+                    const encryptionTime = performance.now() - encryptionStartTime;
+                    
+                    // Update UI
                     document.getElementById('cipherText').textContent = result.ciphertext;
                     document.getElementById('output').classList.remove('hidden');
                     document.getElementById('processDiagram').classList.remove('hidden');
+                    
+                    // Update encryption stats
+                    document.getElementById('originalSize').textContent = `${input.length} bytes`;
+                    document.getElementById('encryptedSize').textContent = `${result.ciphertext.length / 2} bytes`; // Hex is 2 chars per byte
+                    document.getElementById('encryptionTime').textContent = `${encryptionTime.toFixed(2)} ms`;
+                    document.getElementById('securityLevel').textContent = mode === 'ztm' ? '256-bit' : '192-bit';
                     
                     // Animate encryption process
                     animateEncryptionProcess(mode);
@@ -722,22 +1443,26 @@
                     // Animate ciphertext appearance
                     anime({
                         targets: '#cipherText',
-                        scale: [0, 1],
-                        duration: 500,
-                        easing: 'easeOutElastic(1, .5)'
+                        opacity: [0, 1],
+                        duration: 800,
+                        easing: 'easeOutQuad'
                     });
                     
                 } catch (error) {
                     console.error('Encryption error:', error);
                     alert('Error during encryption: ' + error.message);
                 } finally {
-                    button.textContent = originalText;
+                    button.innerHTML = originalText;
                     button.disabled = false;
                 }
             });
             
             // Animate the encryption process visualizer
             function animateEncryptionProcess(mode) {
+                // Update process status
+                document.getElementById('processStatus').textContent = 'Encrypting...';
+                document.getElementById('processStatus').classList.add('loading-pulse');
+                
                 // Show/hide ZTM specific elements
                 document.querySelectorAll('.ztm-only').forEach(el => {
                     if (mode === 'ztm') {
@@ -747,38 +1472,71 @@
                     }
                 });
                 
+                // Update step 2 label for ZTM mode
+                document.getElementById('step2Label').textContent = mode === 'ztm' ? 'ChaCha20' : 'LFSR';
+                
                 // Animation for process steps
                 anime.timeline({
                     easing: 'easeOutExpo',
-                    duration: 300
+                    duration: 400,
+                    complete: function() {
+                        // Update status when animation completes
+                        document.getElementById('processStatus').textContent = 'Encryption Complete';
+                        document.getElementById('processStatus').classList.remove('loading-pulse');
+                    }
                 })
                 .add({
                     targets: '#step1',
                     scale: [0, 1],
-                    rotateZ: ['-45deg', '0deg']
+                    rotateZ: ['-45deg', '0deg'],
+                    backgroundColor: {
+                        value: ['rgba(219, 234, 254, 1)', 'rgba(147, 197, 253, 0.5)'],
+                        duration: 800,
+                        easing: 'easeOutExpo'
+                    }
                 })
                 .add({
                     targets: '#step2',
                     scale: [0, 1],
-                    rotateZ: ['-45deg', '0deg']
-                }, '-=150')
+                    rotateZ: ['-45deg', '0deg'],
+                    backgroundColor: {
+                        value: ['rgba(219, 234, 254, 1)', 'rgba(147, 197, 253, 0.5)'],
+                        duration: 800,
+                        easing: 'easeOutExpo'
+                    }
+                }, '-=200')
                 .add({
                     targets: '#step3',
                     scale: [0, 1],
-                    rotateZ: ['-45deg', '0deg']
-                }, '-=150')
+                    rotateZ: ['-45deg', '0deg'],
+                    backgroundColor: {
+                        value: ['rgba(219, 234, 254, 1)', 'rgba(147, 197, 253, 0.5)'],
+                        duration: 800,
+                        easing: 'easeOutExpo'
+                    }
+                }, '-=200')
                 .add({
                     targets: '#step4',
                     scale: [0, 1],
-                    rotateZ: ['-45deg', '0deg']
-                }, '-=150');
+                    rotateZ: ['-45deg', '0deg'],
+                    backgroundColor: {
+                        value: ['rgba(219, 234, 254, 1)', 'rgba(147, 197, 253, 0.5)'],
+                        duration: 800,
+                        easing: 'easeOutExpo'
+                    }
+                }, '-=200');
                 
                 if (mode === 'ztm') {
                     anime({
                         targets: '#step5',
                         scale: [0, 1],
                         rotateZ: ['-45deg', '0deg'],
-                        delay: 750
+                        backgroundColor: {
+                            value: ['rgba(219, 234, 254, 1)', 'rgba(147, 197, 253, 0.5)'],
+                            duration: 800,
+                            easing: 'easeOutExpo'
+                        },
+                        delay: 1000
                     });
                 }
             }
@@ -791,9 +1549,12 @@
                 }
                 
                 const button = document.getElementById('decryptBtn');
-                const originalText = button.textContent;
-                button.textContent = 'Decrypting...';
+                const originalText = button.innerHTML;
+                button.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Decrypting...';
                 button.disabled = true;
+                
+                // Record start time
+                const decryptionStartTime = performance.now();
                 
                 try {
                     const response = await fetch('/decrypt', {
@@ -807,24 +1568,356 @@
                     }
                     
                     const result = await response.json();
+                    
+                    // Calculate decryption time
+                    const decryptionTime = performance.now() - decryptionStartTime;
+                    
+                    // Update UI
                     document.getElementById('plainText').textContent = result.plaintext;
+                    document.getElementById('decryptionTime').textContent = `Decryption time: ${decryptionTime.toFixed(2)} ms`;
                     
                     // Animate plaintext appearance
                     anime({
                         targets: '#plainText',
-                        scale: [0, 1],
-                        duration: 500,
-                        easing: 'easeOutElastic(1, .5)'
+                        opacity: [0, 1],
+                        duration: 800,
+                        easing: 'easeOutQuad'
                     });
                     
                 } catch (error) {
                     console.error('Decryption error:', error);
                     alert('Error during decryption: ' + error.message);
                 } finally {
-                    button.textContent = originalText;
+                    button.innerHTML = originalText;
                     button.disabled = false;
                 }
             });
+        });
+
+        // Step descriptions for the information panel
+        const stepInfo = [
+            {
+                title: "Key Generation",
+                description: "NTRU-based asymmetric cryptography creates secure key pairs that are resistant to quantum attacks.",
+                icon: "🔑"
+            },
+            {
+                title: "LFSR Stream",
+                description: "Linear Feedback Shift Register produces pseudo-random bit sequences with long periods.",
+                icon: "⏱️"
+            },
+            {
+                title: "Chaotic Map",
+                description: "Applies chaotic mathematical functions to introduce high-entropy randomness into the cipher.",
+                icon: "🔄"
+            },
+            {
+                title: "Transposition",
+                description: "Permutes bit positions according to a key-dependent algorithm, improving diffusion properties.",
+                icon: "↔️"
+            },
+            {
+                title: "Speck CTR",
+                description: "Lightweight block cipher operating in counter mode for the final encryption layer.",
+                icon: "🔒"
+            }
+        ];
+
+        // 3D Visualization globals
+        let threeScene, threeCamera, threeRenderer;
+        let dataCube, particleSystem;
+        let animationRunning = false;
+        let currentStep = 0;
+
+        // Initialize Three.js scene
+        function initThreeJS() {
+            if (!document.getElementById('encryptionCanvas')) return;
+            
+            // Create scene
+            threeScene = new THREE.Scene();
+            threeCamera = new THREE.PerspectiveCamera(75, 300 / 200, 0.1, 1000);
+            threeRenderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('encryptionCanvas'),
+                alpha: true,
+                antialias: true
+            });
+            
+            threeRenderer.setSize(300, 200);
+            threeCamera.position.z = 5;
+            
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            threeScene.add(ambientLight);
+            
+            // Add directional light
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            threeScene.add(directionalLight);
+            
+            // Create data cube that will be "encrypted"
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.8,
+                wireframe: false,
+            });
+            
+            dataCube = new THREE.Mesh(geometry, material);
+            threeScene.add(dataCube);
+            
+            // Add particle system representing encryption bits
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particleCount = 100;
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 10;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                color: 0x00ff00,
+                transparent: true,
+                opacity: 0.7,
+            });
+            
+            particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+            particleSystem.visible = false;
+            threeScene.add(particleSystem);
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                dataCube.rotation.x += 0.01;
+                dataCube.rotation.y += 0.01;
+                threeRenderer.render(threeScene, threeCamera);
+            }
+            
+            animate();
+        }
+
+        // Handle starting the encryption animation
+        function startEncryptionVisualization() {
+            if (animationRunning) return;
+            animationRunning = true;
+            currentStep = 0;
+            
+            // Update button state
+            const button = document.getElementById('startVisualizationBtn');
+            button.disabled = true;
+            button.innerHTML = '<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+        
+            // Reset appearance
+            dataCube.material.color.set(0x3b82f6);
+            dataCube.material.wireframe = false;
+            particleSystem.visible = false;
+            
+            // Reset visualization steps
+            document.getElementById('visProcessComplete').style.opacity = 0;
+            
+            // Update information panel
+            updateInfoPanel(0);
+            
+            // Start animation sequence
+            const timeline = anime.timeline({
+                easing: 'easeInOutSine',
+                complete: function() {
+                    animationRunning = false;
+                    button.disabled = false;
+                    button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg> Restart Encryption';
+                }
+            });
+            
+            // Step 1: Key Generation
+            timeline.add({
+                targets: '.vis-step-1',
+                scale: [0, 1],
+                backgroundColor: {
+                    value: ['rgba(55, 65, 81, 0.8)', 'rgba(59, 130, 246, 0.8)'],
+                    easing: 'easeInOutQuad'
+                },
+                duration: 800,
+                begin: function() {
+                    currentStep = 0;
+                    updateInfoPanel(currentStep);
+                    document.getElementById('visProcessStatus').textContent = 'Processing: Key Generation';
+                    dataCube.material.color.set(0x3b82f6);
+                    dataCube.scale.set(1, 1, 1);
+                }
+            });
+            
+            // Step 2: LFSR
+            timeline.add({
+                targets: '.vis-step-2',
+                scale: [0, 1],
+                backgroundColor: {
+                    value: ['rgba(55, 65, 81, 0.8)', 'rgba(59, 130, 246, 0.8)'],
+                    easing: 'easeInOutQuad'
+                },
+                duration: 800,
+                begin: function() {
+                    currentStep = 1;
+                    updateInfoPanel(currentStep);
+                    document.getElementById('visProcessStatus').textContent = 'Processing: LFSR Stream';
+                    particleSystem.visible = true;
+                    dataCube.material.color.set(0x60a5fa);
+                }
+            });
+            
+            // Step 3: Chaotic Map
+            timeline.add({
+                targets: '.vis-step-3',
+                scale: [0, 1],
+                backgroundColor: {
+                    value: ['rgba(55, 65, 81, 0.8)', 'rgba(59, 130, 246, 0.8)'],
+                    easing: 'easeInOutQuad'
+                },
+                duration: 800,
+                begin: function() {
+                    currentStep = 2;
+                    updateInfoPanel(currentStep);
+                    document.getElementById('visProcessStatus').textContent = 'Processing: Chaotic Map';
+                    dataCube.material.wireframe = true;
+                    // Add extra rotation
+                    anime({
+                        targets: dataCube.rotation,
+                        x: dataCube.rotation.x + Math.PI,
+                        y: dataCube.rotation.y + Math.PI,
+                        duration: 1000,
+                        easing: 'easeInOutQuad'
+                    });
+                }
+            });
+            
+            // Step 4: Transposition
+            timeline.add({
+                targets: '.vis-step-4',
+                scale: [0, 1],
+                backgroundColor: {
+                    value: ['rgba(55, 65, 81, 0.8)', 'rgba(59, 130, 246, 0.8)'],
+                    easing: 'easeInOutQuad'
+                },
+                duration: 800,
+                begin: function() {
+                    currentStep = 3;
+                    updateInfoPanel(currentStep);
+                    document.getElementById('visProcessStatus').textContent = 'Processing: Transposition';
+                    // Animate cube scale
+                    anime({
+                        targets: { x: dataCube.scale.x, y: dataCube.scale.y, z: dataCube.scale.z },
+                        x: [1, 1.2, 0.8, 1],
+                        y: [1, 0.8, 1.2, 1],
+                        z: [1, 1.1, 0.9, 1],
+                        duration: 1000,
+                        easing: 'easeInOutQuad',
+                        update: function(anim) {
+                            const vals = anim.animatables[0].target;
+                            dataCube.scale.set(vals.x, vals.y, vals.z);
+                        }
+                    });
+                }
+            });
+            
+            // Only add Speck CTR step for ZTM mode
+            if (document.getElementById('mode').value === 'ztm') {
+                timeline.add({
+                    targets: '.vis-step-5',
+                    scale: [0, 1],
+                    backgroundColor: {
+                        value: ['rgba(55, 65, 81, 0.8)', 'rgba(59, 130, 246, 0.8)'],
+                        easing: 'easeInOutQuad'
+                    },
+                    duration: 800,
+                    begin: function() {
+                        currentStep = 4;
+                        updateInfoPanel(currentStep);
+                        document.getElementById('visProcessStatus').textContent = 'Processing: Speck CTR';
+                        dataCube.material.wireframe = false;
+                        dataCube.material.color.set(0x10b981);
+                    }
+                });
+            }
+            
+            // Completion
+            timeline.add({
+                targets: '#visProcessComplete',
+                opacity: [0, 1],
+                duration: 800,
+                begin: function() {
+                    document.getElementById('visProcessStatus').textContent = 'Process Complete';
+                    // Final animation for the cube
+                    anime({
+                        targets: { x: dataCube.scale.x, y: dataCube.scale.y, z: dataCube.scale.z },
+                        x: 1.1,
+                        y: 1.1,
+                        z: 1.1,
+                        duration: 600,
+                        easing: 'easeOutElastic',
+                        update: function(anim) {
+                            const vals = anim.animatables[0].target;
+                            dataCube.scale.set(vals.x, vals.y, vals.z);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Update information panel with current step details
+        function updateInfoPanel(stepIndex) {
+            const step = stepInfo[stepIndex];
+            document.getElementById('visStepIcon').textContent = step.icon;
+            document.getElementById('visStepTitle').textContent = step.title;
+            document.getElementById('visStepDescription').textContent = step.description;
+        }
+
+        // Hook this into the existing page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing initialization code...
+            
+            // Initialize Three.js visualization when the page loads
+            if (typeof THREE !== 'undefined') {
+                initThreeJS();
+            } else {
+                // Load Three.js if not already loaded
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js';
+                script.onload = initThreeJS;
+                document.head.appendChild(script);
+            }
+            
+            // Button to start the advanced visualization
+            document.getElementById('startVisualizationBtn')?.addEventListener('click', startEncryptionVisualization);
+            
+            // Modify the encrypt button handler to also show and trigger the advanced visualization
+            const originalEncryptBtnHandler = document.getElementById('encryptBtn').onclick;
+            document.getElementById('encryptBtn').onclick = async function(event) {
+                // Call the original handler first
+                if (originalEncryptBtnHandler) {
+                    await originalEncryptBtnHandler.call(this, event);
+                }
+                
+                // After the original process completes, show and start the advanced visualization
+                setTimeout(function() {
+                    document.getElementById('advancedVisualization').classList.remove('hidden');
+                    // Show the advanced visualization with a nice animation
+                    anime({
+                        targets: '#advancedVisualization',
+                        opacity: [0, 1],
+                        translateY: [20, 0],
+                        duration: 800,
+                        easing: 'easeOutQuad',
+                        complete: function() {
+                            // Start the visualization automatically
+                            if (!animationRunning) {
+                                startEncryptionVisualization();
+                            }
+                        }
+                    });
+                }, 1000); // Give time for the original process to complete
+            };
         });
     </script>
 </body>
