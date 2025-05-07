@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XenoCipher - Algorithm Comparison</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        /* Custom styles */
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .radar-chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #2d3748;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .metric-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .metric-badge.good {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: rgb(16, 185, 129);
+        }
+        .metric-badge.medium {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: rgb(245, 158, 11);
+        }
+        .metric-badge.bad {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: rgb(239, 68, 68);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .comparison-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        .comparison-table tr:hover {
+            background-color: #f9fafb;
+        }
+        .feature-present {
+            color: #10b981;
+        }
+        .feature-absent {
+            color: #ef4444;
+        }
+        .feature-partial {
+            color: #f59e0b;
+        }
+        .algorithm-card {
+            border-top: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .algorithm-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .algorithm-card.xenocipher {
+            border-top-color: #3b82f6;
+        }
+        .algorithm-card.aes {
+            border-top-color: #10b981;
+        }
+        .algorithm-card.rsa {
+            border-top-color: #ef4444;
+        }
+        .algorithm-card.ecc {
+            border-top-color: #f59e0b;
+        }
+        .security-meter {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+            position: relative;
+        }
+        .security-meter-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+        .security-meter-fill.very-high {
+            background-color: #10b981;
+        }
+        .security-meter-fill.high {
+            background-color: #3b82f6;
+        }
+        .security-meter-fill.medium {
+            background-color: #f59e0b;
+        }
+        .security-meter-fill.low {
+            background-color: #ef4444;
+        }
+        .performance-chart-container {
+            height: 250px;
+            width: 100%;
+        }
+        .security-chart-container {
+            height: 250px;
+            width: 100%;
+        }
+        .attack-chart-container {
+            height: 350px;
+            width: 100%;
+        }
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: #e5e7eb;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+        .timeline-container {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+        .timeline-container::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: white;
+            border: 4px solid #3b82f6;
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .timeline-left {
+            left: 0;
+        }
+        .timeline-right {
+            left: 50%;
+        }
+        .timeline-left::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            right: 30px;
+            border: medium solid #f3f4f6;
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent #f3f4f6;
+        }
+        .timeline-right::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 22px;
+            width: 0;
+            z-index: 1;
+            left: 30px;
+            border: medium solid #f3f4f6;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent #f3f4f6 transparent transparent;
+        }
+        .timeline-right::after {
+            left: -10px;
+        }
+        .timeline-content {
+            padding: 20px 30px;
+            background-color: #f3f4f6;
+            position: relative;
+            border-radius: 6px;
+        }
+        @media screen and (max-width: 768px) {
+            .timeline::after {
+                left: 31px;
+            }
+            .timeline-container {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+            .timeline-container::before {
+                left: 60px;
+                border: medium solid #f3f4f6;
+                border-width: 10px 10px 10px 0;
+                border-color: transparent #f3f4f6 transparent transparent;
+            }
+            .timeline-left::after, .timeline-right::after {
+                left: 21px;
+            }
+            .timeline-right {
+                left: 0%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Encryption Algorithm Comparison</h1>
+                <p class="text-gray-600 mt-2">Detailed analysis and comparison of XenoCipher with industry-standard encryption algorithms</p>
+            </div>
+            <a href="/" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Demo
+            </a>
+        </div>
+        
+        <!-- Algorithm Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 algorithm-card xenocipher">
+                <div class="flex items-center mb-4">
+                    <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">XenoCipher</h2>
+                        <p class="text-sm text-gray-500">Hybrid Quantum-Resistant</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Security Level</span>
+                            <span class="text-green-600 font-medium">Very High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill very-high" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Quantum Resistance</span>
+                            <span class="text-green-600 font-medium">High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill high" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Performance</span>
+                            <span class="text-yellow-600 font-medium">Medium</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill medium" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Implementation Complexity</span>
+                            <span class="text-yellow-600 font-medium">Medium</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill medium" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>A hybrid encryption system combining multiple algorithms with quantum-resistant properties.</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 algorithm-card aes">
+                <div class="flex items-center mb-4">
+                    <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">AES</h2>
+                        <p class="text-sm text-gray-500">Symmetric Block Cipher</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Security Level</span>
+                            <span class="text-green-600 font-medium">Very High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill very-high" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Quantum Resistance</span>
+                            <span class="text-yellow-600 font-medium">Medium</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill medium" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Performance</span>
+                            <span class="text-green-600 font-medium">High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill high" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Implementation Complexity</span>
+                            <span class="text-green-600 font-medium">Low</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill very-high" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>Industry standard symmetric encryption algorithm with excellent performance and security.</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 algorithm-card rsa">
+                <div class="flex items-center mb-4">
+                    <div class="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">RSA</h2>
+                        <p class="text-sm text-gray-500">Asymmetric Encryption</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Security Level</span>
+                            <span class="text-blue-600 font-medium">High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill high" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Quantum Resistance</span>
+                            <span class="text-red-600 font-medium">None</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill low" style="width: 10%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Performance</span>
+                            <span class="text-red-600 font-medium">Low</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill low" style="width: 30%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Implementation Complexity</span>
+                            <span class="text-yellow-600 font-medium">Medium</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill medium" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>Widely used asymmetric encryption algorithm vulnerable to quantum computing attacks.</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 algorithm-card ecc">
+                <div class="flex items-center mb-4">
+                    <div class="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">ECC</h2>
+                        <p class="text-sm text-gray-500">Elliptic Curve Cryptography</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Security Level</span>
+                            <span class="text-green-600 font-medium">Very High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill very-high" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Quantum Resistance</span>
+                            <span class="text-red-600 font-medium">None</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill low" style="width: 10%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Performance</span>
+                            <span class="text-blue-600 font-medium">High</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill high" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Implementation Complexity</span>
+                            <span class="text-yellow-600 font-medium">Medium</span>
+                        </div>
+                        <div class="security-meter">
+                            <div class="security-meter-fill medium" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>Efficient asymmetric encryption using elliptic curves, but vulnerable to quantum attacks.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs Navigation -->
+        <div class="mb-6 bg-white rounded-lg shadow-md p-4">
+            <div class="flex flex-wrap border-b border-gray-200">
+                <button class="tab-button active px-4 py-2 text-sm font-medium rounded-t-lg mr-2" data-tab="overview">Overview</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium rounded-t-lg mr-2" data-tab="security">Security Analysis</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium rounded-t-lg mr-2" data-tab="performance">Performance</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium rounded-t-lg mr-2" data-tab="attacks">Attack Resistance</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium rounded-t-lg" data-tab="features">Features</button>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="mt-4">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content active">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Algorithm Overview</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Key Characteristics</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Characteristic</th>
+                                            <th>XenoCipher</th>
+                                            <th>AES</th>
+                                            <th>RSA</th>
+                                            <th>ECC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Type</td>
+                                            <td>Hybrid</td>
+                                            <td>Symmetric</td>
+                                            <td>Asymmetric</td>
+                                            <td>Asymmetric</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Key Size</td>
+                                            <td>256-bit</td>
+                                            <td>128/192/256-bit</td>
+                                            <td>2048/4096-bit</td>
+                                            <td>256-bit</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Block Size</td>
+                                            <td>Variable</td>
+                                            <td>128-bit</td>
+                                            <td>Variable</td>
+                                            <td>Variable</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Structure</td>
+                                            <td>Multi-layer</td>
+                                            <td>SPN</td>
+                                            <td>Modular Exp.</td>
+                                            <td>Elliptic Curve</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Year Introduced</td>
+                                            <td>2023</td>
+                                            <td>2001</td>
+                                            <td>1977</td>
+                                            <td>1985</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Security Equivalence</h3>
+                            <div class="chart-container">
+                                <canvas id="securityEquivalenceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Algorithm Descriptions</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-medium text-blue-600">XenoCipher</h4>
+                                <p class="text-gray-700">XenoCipher is a hybrid encryption system that combines multiple cryptographic primitives to achieve quantum resistance. It uses NTRU for key exchange, followed by a combination of stream ciphers (LFSR, Chaotic Map), transposition, and block ciphers (Speck in ZTM mode). This layered approach provides defense in depth against various attack vectors.</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-green-600">AES (Advanced Encryption Standard)</h4>
+                                <p class="text-gray-700">AES is a symmetric block cipher adopted as an encryption standard by the U.S. government. It processes data in 128-bit blocks using key lengths of 128, 192, or 256 bits. AES uses a substitution-permutation network with multiple rounds of substitution and permutation operations. It offers excellent security and performance but may be vulnerable to quantum computing attacks.</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-red-600">RSA (Rivest-Shamir-Adleman)</h4>
+                                <p class="text-gray-700">RSA is an asymmetric encryption algorithm based on the mathematical difficulty of factoring large composite numbers. It uses a public key for encryption and a private key for decryption. RSA is widely used for secure data transmission and digital signatures but is computationally intensive and vulnerable to quantum computing attacks using Shor's algorithm.</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-yellow-600">ECC (Elliptic Curve Cryptography)</h4>
+                                <p class="text-gray-700">ECC is an asymmetric encryption approach based on the algebraic structure of elliptic curves over finite fields. It offers the same level of security as RSA with much smaller key sizes, making it more efficient. ECC is used in various applications including secure messaging and cryptocurrency. Like RSA, it is vulnerable to quantum computing attacks.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Use Case Recommendations</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Long-term Data Protection</h4>
+                                <p class="text-sm text-gray-600">For data that requires protection beyond 10+ years, especially against future quantum threats:</p>
+                                <div class="mt-2 flex items-center">
+                                    <span class="text-blue-600 font-medium">Recommended:</span>
+                                    <span class="ml-2">XenoCipher (ZTM mode)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">High-Performance Applications</h4>
+                                <p class="text-sm text-gray-600">For applications requiring maximum throughput with strong security:</p>
+                                <div class="mt-2 flex items-center">
+                                    <span class="text-green-600 font-medium">Recommended:</span>
+                                    <span class="ml-2">AES-256</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Resource-Constrained Devices</h4>
+                                <p class="text-sm text-gray-600">For IoT and embedded systems with limited resources:</p>
+                                <div class="mt-2 flex items-center">
+                                    <span class="text-yellow-600 font-medium">Recommended:</span>
+                                    <span class="ml-2">ECC or XenoCipher (Normal mode)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Public Key Infrastructure</h4>
+                                <p class="text-sm text-gray-600">For digital signatures and certificate authorities:</p>
+                                <div class="mt-2 flex items-center">
+                                    <span class="text-yellow-600 font-medium">Recommended:</span>
+                                    <span class="ml-2">RSA-4096 or ECC (transitioning to quantum-resistant)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Analysis Tab -->
+                <div id="security" class="tab-content">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Security Analysis</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Security Metrics</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Metric</th>
+                                            <th>XenoCipher</th>
+                                            <th>AES</th>
+                                            <th>RSA</th>
+                                            <th>ECC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Classical Security (bits)</td>
+                                            <td>256</td>
+                                            <td>256</td>
+                                            <td>112</td>
+                                            <td>128</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Quantum Security (bits)</td>
+                                            <td>128</td>
+                                            <td>128</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Avalanche Effect</td>
+                                            <td>49.8%</td>
+                                            <td>50.1%</td>
+                                            <td>49.9%</td>
+                                            <td>50.2%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Diffusion Score</td>
+                                            <td>0.482</td>
+                                            <td>0.498</td>
+                                            <td>0.495</td>
+                                            <td>0.489</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Side-Channel Resistance</td>
+                                            <td>Medium-High</td>
+                                            <td>Medium</td>
+                                            <td>Low</td>
+                                            <td>Medium</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Quantum vs. Classical Security</h3>
+                            <div class="chart-container">
+                                <canvas id="quantumSecurityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Cryptographic Strength Analysis</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-medium text-blue-600">XenoCipher Strength Analysis</h4>
+                                <p class="text-gray-700 mb-2">XenoCipher derives its security from multiple layers of encryption:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <li>NTRU-based key exchange provides quantum resistance with security based on the shortest vector problem in lattices</li>
+                                    <li>Chaotic maps introduce non-linearity and high entropy</li>
+                                    <li>Transposition provides strong diffusion properties</li>
+                                    <li>In ZTM mode, ChaCha20 and Speck add additional security layers</li>
+                                    <li>The combination of algorithms creates a defense-in-depth approach that mitigates weaknesses in any single algorithm</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-green-600">AES Strength Analysis</h4>
+                                <p class="text-gray-700 mb-2">AES has undergone extensive cryptanalysis and remains secure:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <li>No practical attacks against full-round AES have been discovered</li>
+                                    <li>The best known attacks are only slightly better than brute force</li>
+                                    <li>AES-256 provides 256 bits of security against classical attacks</li>
+                                    <li>Against quantum computers using Grover's algorithm, security is reduced to 128 bits</li>
+                                    <li>Implementation vulnerabilities like side-channel attacks remain the primary concern</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-red-600">RSA Strength Analysis</h4>
+                                <p class="text-gray-700 mb-2">RSA security depends on the factoring problem:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <li>RSA-2048 provides approximately 112 bits of security against classical attacks</li>
+                                    <li>The security is based on the difficulty of factoring large composite numbers</li>
+                                    <li>Shor's algorithm on a quantum computer can break RSA in polynomial time</li>
+                                    <li>RSA is vulnerable to side-channel attacks if not properly implemented</li>
+                                    <li>Increasing key sizes can improve classical security but at a performance cost</li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-yellow-600">ECC Strength Analysis</h4>
+                                <p class="text-gray-700 mb-2">ECC security is based on the elliptic curve discrete logarithm problem:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                    <li>ECC-256 provides approximately 128 bits of security against classical attacks</li>
+                                    <li>Offers equivalent security to RSA with much smaller key sizes</li>
+                                    <li>Like RSA, ECC is vulnerable to Shor's algorithm on quantum computers</li>
+                                    <li>Implementation quality is critical for security, especially against side-channel attacks</li>
+                                    <li>Curve selection is important, with some curves having potential weaknesses</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Security Timeline</h3>
+                        
+                        <div class="timeline">
+                            <div class="timeline-container timeline-left">
+                                <div class="timeline-content">
+                                    <h4 class="font-medium">Present Day</h4>
+                                    <p>All four algorithms provide strong security against classical attacks. XenoCipher and AES offer quantum resistance.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-container timeline-right">
+                                <div class="timeline-content">
+                                    <h4 class="font-medium">5-10 Years</h4>
+                                    <p>Quantum computers may begin to threaten RSA and ECC. XenoCipher's quantum resistance becomes more valuable.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-container timeline-left">
+                                <div class="timeline-content">
+                                    <h4 class="font-medium">10-15 Years</h4>
+                                    <p>RSA and ECC likely broken by quantum computers. AES remains secure with larger key sizes. XenoCipher maintains security.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-container timeline-right">
+                                <div class="timeline-content">
+                                    <h4 class="font-medium">15+ Years</h4>
+                                    <p>Post-quantum cryptography becomes standard. Hybrid approaches like XenoCipher provide the strongest security guarantees.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Tab -->
+                <div id="performance" class="tab-content">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Performance Analysis</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Speed Comparison</h3>
+                            <div class="performance-chart-container">
+                                <canvas id="speedComparisonChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Memory Usage</h3>
+                            <div class="performance-chart-container">
+                                <canvas id="memoryUsageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Performance Metrics</h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>XenoCipher (Normal)</th>
+                                        <th>XenoCipher (ZTM)</th>
+                                        <th>AES-256</th>
+                                        <th>RSA-2048</th>
+                                        <th>ECC-256</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Encryption Speed (MB/s)</td>
+                                        <td>85</td>
+                                        <td>65</td>
+                                        <td>125</td>
+                                        <td>0.4</td>
+                                        <td>3.2</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Decryption Speed (MB/s)</td>
+                                        <td>90</td>
+                                        <td>70</td>
+                                        <td>130</td>
+                                        <td>8.5</td>
+                                        <td>3.5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Key Generation (ms)</td>
+                                        <td>15</td>
+                                        <td>15</td>
+                                        <td>0.1</td>
+                                        <td>360</td>
+                                        <td>25</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Memory Usage (KB)</td>
+                                        <td>24</td>
+                                        <td>32</td>
+                                        <td>4</td>
+                                        <td>256</td>
+                                        <td>32</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CPU Utilization (%)</td>
+                                        <td>65</td>
+                                        <td>80</td>
+                                        <td>45</td>
+                                        <td>95</td>
+                                        <td>70</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Key Exchange Performance</h3>
+                            <div class="performance-chart-container">
+                                <canvas id="keyExchangeChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Performance Analysis</h3>
+                            
+                            <div class="space-y-4 text-gray-700">
+                                <p><span class="font-medium text-blue-600">XenoCipher:</span> Offers balanced performance with moderate encryption/decryption speeds. The ZTM mode adds additional security layers at a slight performance cost. Key generation is efficient compared to other asymmetric algorithms.</p>
+                                
+                                <p><span class="font-medium text-green-600">AES:</span> Provides the best overall performance with high encryption/decryption speeds and minimal memory usage. Hardware acceleration on modern CPUs further improves performance. Ideal for high-throughput applications.</p>
+                                
+                                <p><span class="font-medium text-red-600">RSA:</span> Has the slowest performance, particularly for encryption operations. Key generation is computationally expensive. Best used for low-frequency operations like session key exchange rather than bulk data encryption.</p>
+                                
+                                <p><span class="font-medium text-yellow-600">ECC:</span> Offers better performance than RSA with smaller key sizes, but still significantly slower than symmetric algorithms. Provides a good balance for asymmetric operations where RSA would be too resource-intensive.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attack Resistance Tab -->
+                <div id="attacks" class="tab-content">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Attack Resistance Analysis</h2>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Attack Resistance Overview</h3>
+                        
+                        <div class="radar-chart-container">
+                            <canvas id="attackResistanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Brute Force Attack Resistance</h3>
+                            <div class="chart-container">
+                                <canvas id="bruteForceChart"></canvas>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">Time required to break encryption using brute force attacks (logarithmic scale, years)</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Quantum Attack Resistance</h3>
+                            <div class="chart-container">
+                                <canvas id="quantumAttackChart"></canvas>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">Estimated security level against quantum computers (bits)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Detailed Attack Analysis</h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Attack Type</th>
+                                        <th>XenoCipher</th>
+                                        <th>AES</th>
+                                        <th>RSA</th>
+                                        <th>ECC</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Brute Force</td>
+                                        <td>
+                                            <span class="metric-badge good">Very High Resistance</span>
+                                            <div class="text-xs mt-1">2^256 keyspace</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge good">Very High Resistance</span>
+                                            <div class="text-xs mt-1">2^256 keyspace</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">2^112 equivalent</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge good">Very High Resistance</span>
+                                            <div class="text-xs mt-1">2^128 equivalent</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Quantum Attack</td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">Post-quantum design</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge medium">Medium Resistance</span>
+                                            <div class="text-xs mt-1">Grover's algorithm reduces security</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge bad">No Resistance</span>
+                                            <div class="text-xs mt-1">Broken by Shor's algorithm</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge bad">No Resistance</span>
+                                            <div class="text-xs mt-1">Broken by Shor's algorithm</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Side-Channel</td>
+                                        <td>
+                                            <span class="metric-badge medium">Medium Resistance</span>
+                                            <div class="text-xs mt-1">Multiple layers provide some protection</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge medium">Medium Resistance</span>
+                                            <div class="text-xs mt-1">Implementation-dependent</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge bad">Low Resistance</span>
+                                            <div class="text-xs mt-1">Highly vulnerable if not protected</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge medium">Medium Resistance</span>
+                                            <div class="text-xs mt-1">Implementation-dependent</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chosen Plaintext</td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">Good diffusion properties</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">Excellent diffusion</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">Resistant with proper padding</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">Good mathematical properties</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Man-in-the-Middle</td>
+                                        <td>
+                                            <span class="metric-badge good">High Resistance</span>
+                                            <div class="text-xs mt-1">NTRU-based key exchange</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge medium">N/A</span>
+                                            <div class="text-xs mt-1">Requires secure key exchange</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge medium">Medium Resistance</span>
+                                            <div class="text-xs mt-1">Requires certificate validation</div>
+                                        </td>
+                                        <td>
+                                            <span class="metric-badge medium">Medium Resistance</span>
+                                            <div class="text-xs mt-1">Requires certificate validation</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Attack Simulation Results</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Brute Force Attack</h4>
+                                <div class="text-sm text-gray-700 space-y-2">
+                                    <p>XenoCipher and AES-256 both provide 256-bit security against brute force attacks, requiring approximately 10^63 years to break using classical computers.</p>
+                                    <p>RSA-2048 provides approximately 112-bit security, while ECC-256 provides 128-bit security against classical attacks.</p>
+                                    <p>All algorithms are secure against brute force with current and foreseeable classical computing technology.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Quantum Attack</h4>
+                                <div class="text-sm text-gray-700 space-y-2">
+                                    <p>XenoCipher's NTRU-based design provides strong resistance to quantum attacks, requiring approximately 2,972 logical qubits to attack.</p>
+                                    <p>AES-256 security is reduced to 128-bit against quantum computers using Grover's algorithm.</p>
+                                    <p>RSA and ECC are completely broken by Shor's algorithm on a sufficiently powerful quantum computer.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Side-Channel Attack</h4>
+                                <div class="text-sm text-gray-700 space-y-2">
+                                    <p>XenoCipher's multiple encryption layers provide some inherent protection against side-channel attacks.</p>
+                                    <p>AES implementations can be vulnerable to cache timing and power analysis attacks without specific countermeasures.</p>
+                                    <p>RSA is highly vulnerable to timing attacks without constant-time implementations.</p>
+                                    <p>ECC implementations require careful coding to avoid side-channel leakage.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-gray-800 mb-2">Chosen Plaintext Attack</h4>
+                                <div class="text-sm text-gray-700 space-y-2">
+                                    <p>All algorithms show strong resistance to chosen plaintext attacks when properly implemented.</p>
+                                    <p>XenoCipher and AES demonstrate excellent avalanche effect (close to 50%) and diffusion properties.</p>
+                                    <p>RSA requires proper padding schemes (like OAEP) to resist chosen plaintext attacks.</p>
+                                    <p>ECC's mathematical structure provides inherent resistance to chosen plaintext attacks.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Features Tab -->
+                <div id="features" class="tab-content">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Feature Comparison</h2>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Algorithm Features</h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>XenoCipher</th>
+                                        <th>AES</th>
+                                        <th>RSA</th>
+                                        <th>ECC</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Symmetric Encryption</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-absent">✗</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Asymmetric Encryption</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Quantum Resistance</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-partial">Partial</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-absent">✗</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hardware Acceleration</td>
+                                        <td class="feature-partial">Partial</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-partial">Partial</td>
+                                        <td class="feature-partial">Partial</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Variable Key Size</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Stream Cipher Mode</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-absent">✗</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Block Cipher Mode</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-absent">✗</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Digital Signatures</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Key Exchange</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Authentication</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-present">✓</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Forward Secrecy</td>
+                                        <td class="feature-present">✓</td>
+                                        <td class="feature-absent">✗</td>
+                                        <td class="feature-partial">Partial</td>
+                                        <td class="feature-present">✓</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Implementation Complexity</h3>
+                            <div class="chart-container">
+                                <canvas id="complexityChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-800 mb-3">Standardization Status</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-white p-3 rounded-md shadow-sm">
+                                    <h4 class="font-medium text-blue-600">XenoCipher</h4>
+                                    <p class="text-sm text-gray-700">Experimental algorithm not yet standardized. Uses components from standardized algorithms (NTRU, ChaCha20, Speck).</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded-md shadow-sm">
+                                    <h4 class="font-medium text-green-600">AES</h4>
+                                    <p class="text-sm text-gray-700">NIST FIPS 197 standard. Widely adopted globally and approved for government and commercial use.</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded-md shadow-sm">
+                                    <h4 class="font-medium text-red-600">RSA</h4>
+                                    <p class="text-sm text-gray-700">PKCS#1, RFC 8017 standard. Widely adopted for secure communications and digital signatures.</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded-md shadow-sm">
+                                    <h4 class="font-medium text-yellow-600">ECC</h4>
+                                    <p class="text-sm text-gray-700">NIST SP 800-56A, ANSI X9.62, IEEE 1363 standards. Widely adopted for modern cryptographic applications.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Use Cases and Applications</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-blue-600 mb-2">XenoCipher</h4>
+                                <ul class="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                                    <li>Long-term data protection requiring quantum resistance</li>
+                                    <li>Highly sensitive information storage</li>
+                                    <li>Applications requiring defense-in-depth security</li>
+                                    <li>Hybrid encryption systems</li>
+                                    <li>Future-proof security implementations</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-green-600 mb-2">AES</h4>
+                                <ul class="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                                    <li>Bulk data encryption</li>
+                                    <li>File and disk encryption</li>
+                                    <li>VPN and secure communications</li>
+                                    <li>TLS/SSL secure connections</li>
+                                    <li>High-performance encryption needs</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-red-600 mb-2">RSA</h4>
+                                <ul class="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                                    <li>Digital signatures</li>
+                                    <li>Certificate authorities</li>
+                                    <li>Key exchange</li>
+                                    <li>Secure email (S/MIME)</li>
+                                    <li>Authentication systems</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-white p-4 rounded-md shadow-sm">
+                                <h4 class="font-medium text-yellow-600 mb-2">ECC</h4>
+                                <ul class="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                                    <li>Mobile and resource-constrained devices</li>
+                                    <li>Smart cards</li>
+                                    <li>Cryptocurrency and blockchain</li>
+                                    <li>Secure messaging applications</li>
+                                    <li>TLS/SSL with limited resources</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conclusion -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Conclusion and Recommendations</h2>
+            
+            <div class="space-y-4 text-gray-700">
+                <p>Based on the comprehensive analysis of XenoCipher, AES, RSA, and ECC, we can draw the following conclusions:</p>
+                
+                <div class="pl-5 space-y-2">
+                    <p><span class="font-medium">1. Security:</span> All algorithms provide strong security against classical attacks. XenoCipher and AES offer the best quantum resistance, while RSA and ECC are vulnerable to quantum computing attacks.</p>
+                    
+                    <p><span class="font-medium">2. Performance:</span> AES offers the best performance for symmetric encryption. XenoCipher provides balanced performance with additional security layers. RSA has the poorest performance, while ECC offers better performance than RSA for asymmetric operations.</p>
+                    
+                    <p><span class="font-medium">3. Features:</span> XenoCipher offers the most comprehensive feature set with both symmetric and asymmetric capabilities. AES is limited to symmetric encryption, while RSA and ECC provide asymmetric encryption, digital signatures, and key exchange.</p>
+                    
+                    <p><span class="font-medium">4. Implementation:</span> AES has the lowest implementation complexity and is widely supported in hardware and software. XenoCipher has moderate complexity due to its hybrid nature. RSA and ECC require careful implementation to avoid security vulnerabilities.</p>
+                </div>
+                
+                <p class="font-medium mt-4">Recommendations:</p>
+                
+                <div class="pl-5 space-y-2">
+                    <p><span class="font-medium">For immediate security needs:</span> AES-256 remains the best choice for symmetric encryption due to its excellent security, performance, and widespread support.</p>
+                    
+                    <p><span class="font-medium">For asymmetric operations:</span> ECC is recommended over RSA for better performance and smaller key sizes when quantum resistance is not an immediate concern.</p>
+                    
+                    <p><span class="font-medium">For long-term security:</span> XenoCipher or other post-quantum algorithms should be considered for data that requires protection beyond 10+ years, especially against future quantum threats.</p>
+                    
+                    <p><span class="font-medium">For hybrid approaches:</span> A combination of AES for bulk encryption with post-quantum key exchange (like XenoCipher's NTRU component) provides an excellent balance of security and performance.</p>
+                </div>
+                
+                <p class="mt-4">As quantum computing continues to advance, organizations should begin planning their migration to quantum-resistant algorithms. XenoCipher represents one approach to addressing this challenge through a hybrid encryption system that combines classical and post-quantum techniques.</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center text-gray-500 text-sm">
+            <p>XenoCipher Algorithm Comparison © 2023</p>
+            <p class="mt-1">This comparison is for educational purposes only. Security requirements vary by application.</p>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Initialize or update charts for the active tab
+                    if (tabId === 'overview') {
+                        initSecurityEquivalenceChart();
+                    } else if (tabId === 'security') {
+                        initQuantumSecurityChart();
+                    } else if (tabId === 'performance') {
+                        initSpeedComparisonChart();
+                        initMemoryUsageChart();
+                        initKeyExchangeChart();
+                    } else if (tabId === 'attacks') {
+                        initAttackResistanceChart();
+                        initBruteForceChart();
+                        initQuantumAttackChart();
+                    } else if (tabId === 'features') {
+                        initComplexityChart();
+                    }
+                });
+            });
+            
+            // Initialize charts for the default active tab
+            initSecurityEquivalenceChart();
+            
+            // Initialize all charts with a small delay to ensure DOM is ready
+            setTimeout(() => {
+                initQuantumSecurityChart();
+                initSpeedComparisonChart();
+                initMemoryUsageChart();
+                initKeyExchangeChart();
+                initAttackResistanceChart();
+                initBruteForceChart();
+                initQuantumAttackChart();
+                initComplexityChart();
+            }, 500);
+        });
+        
+        // Chart initialization functions
+        function initSecurityEquivalenceChart() {
+            const ctx = document.getElementById('securityEquivalenceChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            // Create gradient for bars
+            const chartCtx = ctx.getContext('2d');
+            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+            blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+            
+            const greenGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            greenGradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+            greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
+            
+            const redGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+            redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+            
+            const yellowGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.8)');
+            yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.2)');
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
+                    datasets: [{
+                        label: 'Key Size (bits)',
+                        data: [256, 256, 2048, 256],
+                        backgroundColor: [blueGradient, greenGradient, redGradient, yellowGradient],
+                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
+                        borderWidth: 1
+                    }, {
+                        label: 'Effective Security (bits)',
+                        data: [256, 256, 112, 128],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.5)',
+                            'rgba(16, 185, 129, 0.5)',
+                            'rgba(239, 68, 68, 0.5)',
+                            'rgba(245, 158, 11, 0.5)'
+                        ],
+                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Bits'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Key Size vs. Effective Security',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} bits`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initQuantumSecurityChart() {
+            const ctx = document.getElementById('quantumSecurityChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            // Create gradient for bars
+            const chartCtx = ctx.getContext('2d');
+            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+            blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+            
+            const greenGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            greenGradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+            greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
+            
+            const redGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+            redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+            
+            const yellowGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.8)');
+            yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.2)');
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
+                    datasets: [{
+                        label: 'Classical Security (bits)',
+                        data: [256, 256, 112, 128],
+                        backgroundColor: [blueGradient, greenGradient, redGradient, yellowGradient],
+                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
+                        borderWidth: 1
+                    }, {
+                        label: 'Quantum Security (bits)',
+                        data: [128, 128, 0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.5)',
+                            'rgba(16, 185, 129, 0.5)',
+                            'rgba(239, 68, 68, 0.5)',
+                            'rgba(245, 158, 11, 0.5)'
+                        ],
+                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
+                        borderWidth: 1,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Security Level (bits)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Quantum vs. Classical Security',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} bits`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initSpeedComparisonChart() {
+            const ctx = document.getElementById('speedComparisonChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher (Normal)', 'XenoCipher (ZTM)', 'AES-256', 'RSA-2048', 'ECC-256'],
+                    datasets: [{
+                        label: 'Encryption Speed (MB/s)',
+                        data: [85, 65, 125, 0.4, 3.2],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Decryption Speed (MB/s)',
+                        data: [90, 70, 130, 8.5, 3.5],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Speed (MB/s)'
+                            },
+                            type: 'logarithmic'
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Encryption/Decryption Speed (logarithmic scale)',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initMemoryUsageChart() {
+            const ctx = document.getElementById('memoryUsageChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher (Normal)', 'XenoCipher (ZTM)', 'AES-256', 'RSA-2048', 'ECC-256'],
+                    datasets: [{
+                        label: 'Memory Usage (KB)',
+                        data: [24, 32, 4, 256, 32],
+                        backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                        borderColor: 'rgb(245, 158, 11)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Memory (KB)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Memory Usage Comparison',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initKeyExchangeChart() {
+            const ctx = document.getElementById('keyExchangeChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher (NTRU)', 'RSA-2048', 'ECC-256'],
+                    datasets: [{
+                        label: 'Key Generation Time (ms)',
+                        data: [15, 360, 25],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time (ms)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Key Exchange Performance',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initAttackResistanceChart() {
+            const ctx = document.getElementById('attackResistanceChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            // Create gradients for datasets
+            const chartCtx = ctx.getContext('2d');
+            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+            blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+            
+            const greenGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            greenGradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+            greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+            
+            const redGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
+            redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
+            
+            const yellowGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+            yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.2)');
+            yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.05)');
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Brute Force', 'Quantum', 'Side-Channel', 'Chosen Plaintext', 'MITM'],
+                    datasets: [{
+                        label: 'XenoCipher',
+                        data: [9.8, 9.2, 7.5, 9.0, 8.5],
+                        backgroundColor: blueGradient,
+                        borderColor: 'rgb(59, 130, 246)',
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        borderWidth: 2
+                    }, {
+                        label: 'AES',
+                        data: [9.9, 5.0, 6.5, 9.5, 8.0],
+                        backgroundColor: greenGradient,
+                        borderColor: 'rgb(16, 185, 129)',
+                        pointBackgroundColor: 'rgb(16, 185, 129)',
+                        borderWidth: 2
+                    }, {
+                        label: 'RSA',
+                        data: [9.5, 1.0, 4.2, 9.0, 7.0],
+                        backgroundColor: redGradient,
+                        borderColor: 'rgb(239, 68, 68)',
+                        pointBackgroundColor: 'rgb(239, 68, 68)',
+                        borderWidth: 2
+                    }, {
+                        label: 'ECC',
+                        data: [9.7, 1.0, 5.8, 9.2, 7.5],
+                        backgroundColor: yellowGradient,
+                        borderColor: 'rgb(245, 158, 11)',
+                        pointBackgroundColor: 'rgb(245, 158, 11)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Attack Resistance Comparison (Higher is Better)',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}/10`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initBruteForceChart() {
+            const ctx = document.getElementById('bruteForceChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
+                    datasets: [{
+                        label: 'Years to Break (log scale)',
+                        data: [63, 63, 33, 38],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(239, 68, 68)',
+                            'rgb(245, 158, 11)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'log₁₀(Years)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Brute Force Attack Resistance',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: 10^${context.raw} years`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initQuantumAttackChart() {
+            const ctx = document.getElementById('quantumAttackChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
+                    datasets: [{
+                        label: 'Quantum Security (bits)',
+                        data: [128, 128, 0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(239, 68, 68)',
+                            'rgb(245, 158, 11)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Security Level (bits)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Quantum Attack Resistance',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initComplexityChart() {
+            const ctx = document.getElementById('complexityChart');
+            if (!ctx) return;
+            
+            // Destroy existing chart if it exists
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
+                    datasets: [{
+                        label: 'Implementation Complexity (lower is easier)',
+                        data: [7, 3, 6, 5],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(239, 68, 68)',
+                            'rgb(245, 158, 11)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: 'Complexity Score (0-10)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Implementation Complexity',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -783,6 +783,10 @@ def error_route():
     logger.error(f"Attack route error: {e}")
     return jsonify({'error': str(e)}), 500
 
+@app.route('/comparison.html')
+def comparison():
+    return app.send_static_file('comparison.html')
+
 @app.route('/')
 def index():
     """Serve the main HTML page"""
@@ -845,3 +849,4 @@ if __name__ == '__main__':
     
     # Start the server - bind to all interfaces for better visibility
     app.run(host='0.0.0.0', port=5000, debug=False)
+
