@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, send_from_directory
 import os
 import random
 import numpy as np
@@ -16,7 +16,8 @@ logger = logging.getLogger('xenocipher')
 
 print("Starting XenoCipher Server...")
 
-app = Flask(__name__)
+# Create Flask app with static folder configuration
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 # NTRU parameters - Using more secure parameters
 N = 743  # Increased from 503 for better security
@@ -785,7 +786,15 @@ def error_route():
 
 @app.route('/comparison.html')
 def comparison():
-    return app.send_static_file('comparison.html')
+    return send_from_directory('static', 'comparison.html')
+
+@app.route('/encryption.js')
+def encryption_js():
+    return send_from_directory('static', 'encryption.js')
+
+@app.route('/charts.js')
+def charts_js():
+    return send_from_directory('static', 'charts.js')
 
 @app.route('/')
 def index():

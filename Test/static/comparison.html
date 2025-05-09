@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Custom styles */
         .gradient-bg {
@@ -257,6 +258,39 @@
                 left: 0%;
             }
         }
+        
+        /* New styles for encryption input */
+        .encryption-input {
+            transition: all 0.3s ease;
+        }
+        .encryption-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        .encrypted-output {
+            font-family: monospace;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .encryption-time {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -273,6 +307,110 @@
                 </svg>
                 Back to Demo
             </a>
+        </div>
+        
+        <!-- Encryption Input Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Real-time Encryption Test</h2>
+            <p class="text-gray-600 mb-4">Enter text below to see how each algorithm encrypts it in real-time</p>
+            
+            <div class="mb-4">
+                <label for="encryption-input" class="block text-sm font-medium text-gray-700 mb-2">Text to Encrypt</label>
+                <textarea id="encryption-input" class="encryption-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none" rows="3" placeholder="Enter text to encrypt..."></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">XenoCipher Mode</label>
+                <div class="flex space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="xenocipher-mode" value="normal" class="form-radio text-blue-600">
+                        <span class="ml-2 text-gray-700">Normal Mode</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="xenocipher-mode" value="ztm" class="form-radio text-blue-600" checked>
+                        <span class="ml-2 text-gray-700">ZTM Mode (Enhanced Security)</span>
+                    </label>
+                </div>
+            </div>
+            
+            <button id="encrypt-button" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                Encrypt
+            </button>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                <div class="bg-white rounded-lg border border-gray-200 p-4 algorithm-card xenocipher">
+                    <h3 class="text-lg font-medium text-blue-600 mb-2">XenoCipher</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Encryption Time</span>
+                            <span id="xenocipher-time" class="encryption-time text-blue-600">-</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-md">
+                        <p class="text-xs text-gray-500 mb-1">Encrypted Output:</p>
+                        <div id="xenocipher-output" class="encrypted-output text-xs text-gray-800">
+                            Waiting for input...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg border border-gray-200 p-4 algorithm-card aes">
+                    <h3 class="text-lg font-medium text-green-600 mb-2">AES</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Encryption Time</span>
+                            <span id="aes-time" class="encryption-time text-green-600">-</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-md">
+                        <p class="text-xs text-gray-500 mb-1">Encrypted Output:</p>
+                        <div id="aes-output" class="encrypted-output text-xs text-gray-800">
+                            Waiting for input...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg border border-gray-200 p-4 algorithm-card rsa">
+                    <h3 class="text-lg font-medium text-red-600 mb-2">RSA</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Encryption Time</span>
+                            <span id="rsa-time" class="encryption-time text-red-600">-</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-md">
+                        <p class="text-xs text-gray-500 mb-1">Encrypted Output:</p>
+                        <div id="rsa-output" class="encrypted-output text-xs text-gray-800">
+                            Waiting for input...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg border border-gray-200 p-4 algorithm-card ecc">
+                    <h3 class="text-lg font-medium text-yellow-600 mb-2">ECC</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>Encryption Time</span>
+                            <span id="ecc-time" class="encryption-time text-yellow-600">-</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-md">
+                        <p class="text-xs text-gray-500 mb-1">Encrypted Output:</p>
+                        <div id="ecc-output" class="encrypted-output text-xs text-gray-800">
+                            Waiting for input...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Performance Metrics</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="performance-chart-container">
+                        <canvas id="realTimePerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Algorithm Cards -->
@@ -559,7 +697,7 @@
                                         </tr>
                                         <tr>
                                             <td>Year Introduced</td>
-                                            <td>2023</td>
+                                            <td>2025</td>
                                             <td>2001</td>
                                             <td>1977</td>
                                             <td>1985</td>
@@ -1167,8 +1305,6 @@
                                         <td class="feature-present">✓</td>
                                         <td class="feature-absent">✗</td>
                                         <td class="feature-present">✓</td>
-                                        <td class="feature-absent">✗</td>
-                                        <td class="feature-present">✓</td>
                                         <td class="feature-present">✓</td>
                                     </tr>
                                     <tr>
@@ -1320,657 +1456,12 @@
         
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm">
-            <p>XenoCipher Algorithm Comparison © 2023</p>
+            <p>XenoCipher Algorithm Comparison © 2025</p>
             <p class="mt-1">This comparison is for educational purposes only. Security requirements vary by application.</p>
         </div>
     </div>
 
-    <script>
-        // Tab switching functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Remove active class from all buttons and contents
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    // Add active class to clicked button and corresponding content
-                    button.classList.add('active');
-                    const tabId = button.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                    
-                    // Initialize or update charts for the active tab
-                    if (tabId === 'overview') {
-                        initSecurityEquivalenceChart();
-                    } else if (tabId === 'security') {
-                        initQuantumSecurityChart();
-                    } else if (tabId === 'performance') {
-                        initSpeedComparisonChart();
-                        initMemoryUsageChart();
-                        initKeyExchangeChart();
-                    } else if (tabId === 'attacks') {
-                        initAttackResistanceChart();
-                        initBruteForceChart();
-                        initQuantumAttackChart();
-                    } else if (tabId === 'features') {
-                        initComplexityChart();
-                    }
-                });
-            });
-            
-            // Initialize charts for the default active tab
-            initSecurityEquivalenceChart();
-            
-            // Initialize all charts with a small delay to ensure DOM is ready
-            setTimeout(() => {
-                initQuantumSecurityChart();
-                initSpeedComparisonChart();
-                initMemoryUsageChart();
-                initKeyExchangeChart();
-                initAttackResistanceChart();
-                initBruteForceChart();
-                initQuantumAttackChart();
-                initComplexityChart();
-            }, 500);
-        });
-        
-        // Chart initialization functions
-        function initSecurityEquivalenceChart() {
-            const ctx = document.getElementById('securityEquivalenceChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            // Create gradient for bars
-            const chartCtx = ctx.getContext('2d');
-            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
-            blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
-            
-            const greenGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            greenGradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
-            greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
-            
-            const redGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
-            redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
-            
-            const yellowGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.8)');
-            yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.2)');
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
-                    datasets: [{
-                        label: 'Key Size (bits)',
-                        data: [256, 256, 2048, 256],
-                        backgroundColor: [blueGradient, greenGradient, redGradient, yellowGradient],
-                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
-                        borderWidth: 1
-                    }, {
-                        label: 'Effective Security (bits)',
-                        data: [256, 256, 112, 128],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.5)',
-                            'rgba(16, 185, 129, 0.5)',
-                            'rgba(239, 68, 68, 0.5)',
-                            'rgba(245, 158, 11, 0.5)'
-                        ],
-                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Bits'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Key Size vs. Effective Security',
-                            font: {
-                                size: 14
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw} bits`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initQuantumSecurityChart() {
-            const ctx = document.getElementById('quantumSecurityChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            // Create gradient for bars
-            const chartCtx = ctx.getContext('2d');
-            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
-            blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
-            
-            const greenGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            greenGradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
-            greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.2)');
-            
-            const redGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
-            redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
-            
-            const yellowGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.8)');
-            yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.2)');
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
-                    datasets: [{
-                        label: 'Classical Security (bits)',
-                        data: [256, 256, 112, 128],
-                        backgroundColor: [blueGradient, greenGradient, redGradient, yellowGradient],
-                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
-                        borderWidth: 1
-                    }, {
-                        label: 'Quantum Security (bits)',
-                        data: [128, 128, 0, 0],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.5)',
-                            'rgba(16, 185, 129, 0.5)',
-                            'rgba(239, 68, 68, 0.5)',
-                            'rgba(245, 158, 11, 0.5)'
-                        ],
-                        borderColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(239, 68, 68)', 'rgb(245, 158, 11)'],
-                        borderWidth: 1,
-                        borderDash: [5, 5]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Security Level (bits)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Quantum vs. Classical Security',
-                            font: {
-                                size: 14
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw} bits`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initSpeedComparisonChart() {
-            const ctx = document.getElementById('speedComparisonChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher (Normal)', 'XenoCipher (ZTM)', 'AES-256', 'RSA-2048', 'ECC-256'],
-                    datasets: [{
-                        label: 'Encryption Speed (MB/s)',
-                        data: [85, 65, 125, 0.4, 3.2],
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                        borderColor: 'rgb(59, 130, 246)',
-                        borderWidth: 1
-                    }, {
-                        label: 'Decryption Speed (MB/s)',
-                        data: [90, 70, 130, 8.5, 3.5],
-                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                        borderColor: 'rgb(16, 185, 129)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Speed (MB/s)'
-                            },
-                            type: 'logarithmic'
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Encryption/Decryption Speed (logarithmic scale)',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initMemoryUsageChart() {
-            const ctx = document.getElementById('memoryUsageChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher (Normal)', 'XenoCipher (ZTM)', 'AES-256', 'RSA-2048', 'ECC-256'],
-                    datasets: [{
-                        label: 'Memory Usage (KB)',
-                        data: [24, 32, 4, 256, 32],
-                        backgroundColor: 'rgba(245, 158, 11, 0.7)',
-                        borderColor: 'rgb(245, 158, 11)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Memory (KB)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Memory Usage Comparison',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initKeyExchangeChart() {
-            const ctx = document.getElementById('keyExchangeChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher (NTRU)', 'RSA-2048', 'ECC-256'],
-                    datasets: [{
-                        label: 'Key Generation Time (ms)',
-                        data: [15, 360, 25],
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                        borderColor: 'rgb(59, 130, 246)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Time (ms)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Key Exchange Performance',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initAttackResistanceChart() {
-            const ctx = document.getElementById('attackResistanceChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            // Create gradients for datasets
-            const chartCtx = ctx.getContext('2d');
-            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            blueGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-            blueGradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
-            
-            const greenGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            greenGradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
-            greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
-            
-            const redGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            redGradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
-            redGradient.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
-            
-            const yellowGradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-            yellowGradient.addColorStop(0, 'rgba(245, 158, 11, 0.2)');
-            yellowGradient.addColorStop(1, 'rgba(245, 158, 11, 0.05)');
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Brute Force', 'Quantum', 'Side-Channel', 'Chosen Plaintext', 'MITM'],
-                    datasets: [{
-                        label: 'XenoCipher',
-                        data: [9.8, 9.2, 7.5, 9.0, 8.5],
-                        backgroundColor: blueGradient,
-                        borderColor: 'rgb(59, 130, 246)',
-                        pointBackgroundColor: 'rgb(59, 130, 246)',
-                        borderWidth: 2
-                    }, {
-                        label: 'AES',
-                        data: [9.9, 5.0, 6.5, 9.5, 8.0],
-                        backgroundColor: greenGradient,
-                        borderColor: 'rgb(16, 185, 129)',
-                        pointBackgroundColor: 'rgb(16, 185, 129)',
-                        borderWidth: 2
-                    }, {
-                        label: 'RSA',
-                        data: [9.5, 1.0, 4.2, 9.0, 7.0],
-                        backgroundColor: redGradient,
-                        borderColor: 'rgb(239, 68, 68)',
-                        pointBackgroundColor: 'rgb(239, 68, 68)',
-                        borderWidth: 2
-                    }, {
-                        label: 'ECC',
-                        data: [9.7, 1.0, 5.8, 9.2, 7.5],
-                        backgroundColor: yellowGradient,
-                        borderColor: 'rgb(245, 158, 11)',
-                        pointBackgroundColor: 'rgb(245, 158, 11)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 10,
-                            ticks: {
-                                stepSize: 2
-                            },
-                            pointLabels: {
-                                font: {
-                                    size: 12,
-                                    weight: 'bold'
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            },
-                            angleLines: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Attack Resistance Comparison (Higher is Better)',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        },
-                        legend: {
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw}/10`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initBruteForceChart() {
-            const ctx = document.getElementById('bruteForceChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
-                    datasets: [{
-                        label: 'Years to Break (log scale)',
-                        data: [63, 63, 33, 38],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(239, 68, 68, 0.7)',
-                            'rgba(245, 158, 11, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(59, 130, 246)',
-                            'rgb(16, 185, 129)',
-                            'rgb(239, 68, 68)',
-                            'rgb(245, 158, 11)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'log₁₀(Years)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Brute Force Attack Resistance',
-                            font: {
-                                size: 14
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: 10^${context.raw} years`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initQuantumAttackChart() {
-            const ctx = document.getElementById('quantumAttackChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
-                    datasets: [{
-                        label: 'Quantum Security (bits)',
-                        data: [128, 128, 0, 0],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(239, 68, 68, 0.7)',
-                            'rgba(245, 158, 11, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(59, 130, 246)',
-                            'rgb(16, 185, 129)',
-                            'rgb(239, 68, 68)',
-                            'rgb(245, 158, 11)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Security Level (bits)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Quantum Attack Resistance',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function initComplexityChart() {
-            const ctx = document.getElementById('complexityChart');
-            if (!ctx) return;
-            
-            // Destroy existing chart if it exists
-            if (ctx.chart) {
-                ctx.chart.destroy();
-            }
-            
-            ctx.chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['XenoCipher', 'AES', 'RSA', 'ECC'],
-                    datasets: [{
-                        label: 'Implementation Complexity (lower is easier)',
-                        data: [7, 3, 6, 5],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(239, 68, 68, 0.7)',
-                            'rgba(245, 158, 11, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(59, 130, 246)',
-                            'rgb(16, 185, 129)',
-                            'rgb(239, 68, 68)',
-                            'rgb(245, 158, 11)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 10,
-                            title: {
-                                display: true,
-                                text: 'Complexity Score (0-10)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Implementation Complexity',
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    </script>
+    <script type="module" src="encryption.js"></script>
+    <script type="module" src="charts.js"></script>
 </body>
 </html>
