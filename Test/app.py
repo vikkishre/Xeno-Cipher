@@ -17,7 +17,7 @@ logger = logging.getLogger('xenocipher')
 print("Starting XenoCipher Server...")
 
 # Create Flask app with static folder configuration
-app = Flask(__name__, static_folder='static', static_url_path='')
+app = Flask(__name__, static_folder='static')
 
 # NTRU parameters - Using more secure parameters
 N = 743  # Increased from 503 for better security
