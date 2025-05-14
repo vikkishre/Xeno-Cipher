@@ -796,6 +796,11 @@ def encryption_js():
 def charts_js():
     return send_from_directory('static', 'charts.js')
 
+@app.route('/scripts.js')
+def scripts_js():
+    """Serve the scripts.js file"""
+    return send_from_directory('static', 'scripts.js')
+
 @app.route('/')
 def index():
     """Serve the main HTML page"""
