@@ -1,1 +1,1 @@
-web: cd Test && gunicorn app:app 
+web: gunicorn --chdir Test app:app 

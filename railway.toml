@@ -3,6 +3,9 @@ builder = "NIXPACKS"
 buildCommand = "pip install -r Test/requirements.txt && pip install gunicorn"
 
 [deploy]
-startCommand = "cd Test && gunicorn app:app"
+# Option 1: Using gunicorn with chdir
+startCommand = "gunicorn --chdir Test app:app"
+# Option 2: Alternative if above doesn't work
+# startCommand = "python main.py"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3 
