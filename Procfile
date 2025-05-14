@@ -1,0 +1,1 @@
+web: cd Test && gunicorn app:app 

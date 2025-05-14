@@ -1,0 +1,8 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r Test/requirements.txt && pip install gunicorn"
+
+[deploy]
+startCommand = "cd Test && gunicorn app:app"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3 
