@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+nixpacksPlan = { providers = ["python"], buildInputs = [] }
+
+[deploy]
+numReplicas = 1
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+sleepApplication = false 
