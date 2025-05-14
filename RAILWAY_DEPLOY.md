@@ -1,93 +1,56 @@
- # Railway Deployment Guide for XenoCipher
+# XenoCipher Railway Deployment Guide
 
-This guide provides detailed instructions for deploying XenoCipher on Railway.
+## The Problem: Directory Structure
 
-## Fixing "cd command not found" Error
+The original error `Error: can't chdir to 'Test'` indicates that Railway can't find the Test directory. This is because Railway has a specific way of handling file uploads and directory structures.
 
-If you encounter the error `The executable 'cd' could not be found`, try these solutions:
+## Solution: Simplified App Structure
 
-### Solution 1: Use gunicorn with --chdir flag
+To solve this issue, I've created a simplified version of the app at the root level:
 
-The current configuration in Procfile and railway.toml uses this approach:
-```
-web: gunicorn --chdir Test app:app
-```
+1. `app.py` - A simplified version of your Flask application
+2. `requirements.txt` - Basic requirements with just Flask and Gunicorn
+3. `Procfile` - Simple configuration using the root-level app.py
+4. `railway.json` - Updated configuration for Railway
 
-This tells gunicorn to change to the Test directory before running the app.
+## How This Works
 
-### Solution 2: Use main.py
+1. This simplified app serves as a "proxy" or "placeholder"
+2. It confirms that Railway deployment works correctly
+3. Once this is working, you can gradually migrate functionality from your Test directory
 
-If Solution 1 doesn't work, uncomment the alternative startCommand in railway.toml:
-```
-startCommand = "python main.py"
-```
+## Next Steps After Successful Deployment
 
-This uses the main.py file we've created, which imports from the Test directory.
+1. Once the basic app is working, you can:
+   - Gradually move your actual functionality to app.py
+   - Or modify app.py to properly import your Test directory modules
+   - Add more dependencies to requirements.txt as needed
 
-### Solution 3: Use run.sh with proper permissions
-
-If you're still having issues, try:
-
-1. Make sure run.sh is executable:
+2. To move toward your full application:
+   ```python
+   # In app.py after successful basic deployment
+   import sys
+   import os
+   
+   # Add paths
+   sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'Test'))
+   
+   # Import your components
+   from Test.your_module import your_function
    ```
-   git update-index --chmod=+x run.sh
-   git commit -m "Make run.sh executable"
-   git push
-   ```
 
-2. Update railway.toml to use:
-   ```
-   startCommand = "./run.sh"
-   ```
+## Troubleshooting
 
-## Troubleshooting the Deployment
+If you continue to encounter issues:
 
-### Check Logs
+1. Check Railway logs for specific error details
+2. Verify that your requirements.txt has all necessary dependencies
+3. Consider using Railway's environment variables for configuration
+4. Review Railway's documentation for Python apps: https://docs.railway.app/guides/python
 
-Railway provides detailed logs for each deployment:
-1. Go to your Railway dashboard
-2. Click on your XenoCipher project
-3. Select the "Deployments" tab
-4. Click on the latest deployment
-5. View logs to see what's happening
+## Alternative Approach
 
-### Try Different Python Versions
+If you prefer to maintain your existing structure:
 
-If you're experiencing compatibility issues, you can try a different Python version:
-
-Add to railway.toml:
-```
-[variables]
-PYTHON_VERSION = "3.9"
-```
-
-### Ensure All Dependencies are Listed
-
-Make sure all required packages are listed in Test/requirements.txt.
-
-## Deployment Files
-
-Your project should include these files for Railway deployment:
-
-1. `Procfile` - Tells Railway how to run your application
-2. `railway.toml` or `railway.json` - Configuration for Railway
-3. `main.py` - Alternative entry point 
-4. `run.sh` - Shell script as another alternative
-
-## Alternative Platforms
-
-If you continue to face issues with Railway, consider these alternatives:
-
-1. **Render** - Similar to Railway with excellent Flask support
-2. **PythonAnywhere** - Specifically designed for Python web apps
-3. **Fly.io** - Good for Flask applications with a simple setup
-
-## Getting Help
-
-If you continue to face issues, you can:
-
-1. Check Railway's documentation: https://docs.railway.app/
-2. Join Railway's Discord community for support
-3. Open an issue on Railway's GitHub repository
-
-Remember to commit and push all configuration files to your repository before deploying to Railway.
+1. Ensure your Test directory is properly uploaded to Railway
+2. Try using a different service like Render or PythonAnywhere that has better support for custom directory structures
