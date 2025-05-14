@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: xenocipher
+    runtime: python
+    buildCommand: pip install -r Test/requirements.txt
+    startCommand: cd Test && python -m gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: WEB_CONCURRENCY
+        value: 4 
